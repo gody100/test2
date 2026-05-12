@@ -316,11 +316,11 @@ let d=delay0+350;
 setTimeout(()=>{
 const tr=document.createElement('tr');
 tr.style.animation='fadeIn .4s ease';
-const richText=`사내 복지규정 의료비 지급 조항에 따르면 <strong style="color:#e0e6f0">${diag}</strong>(<span class="enc-part" style="color:#7b61ff;font-size:11px">${enc}</span>)에 해당하는 질병에 대한 급여 비용은 구성원에게 100% 지급한다. <br><small style="color:#7b8faa">출처: 사내 복지-의료비 가이드 (2026년 1월 개정)</small>`;
+const richText=`사내 복지규정 제12조(의료비 지원) 조항에 따르면, 내과 진료 항목 중 <span style="color:#ff4757;text-decoration:line-through;font-weight:bold">${diag}</span>(<span class="enc-part" style="color:#7b61ff;font-size:11px">${enc}</span>) 질병에 대한 급여성 본인부담 비용은 구성원 건강 보건 및 복지 증진을 위해 회사가 100% 지급하는 것을 원칙으로 한다. 본 지원금은 사내 복지 기금 운용 지침에 의거하여 정산된다. <br><small style="color:#7b8faa">출처: 사내 복지-의료비 가이드 (2026년 1월 개정)</small>`;
 const matchHtml=isMatch?'<td><span class="status-badge status-active">✓ 일치</span></td>':'<td><span class="status-badge status-inactive">✗ 불일치</span></td>';
 tr.innerHTML=`<td style="line-height:1.6;color:#a0b4cc">${richText}</td>${matchHtml}<td><span class="status-badge status-encrypted">암호화됨</span></td>`;
 tb.appendChild(tr);
-log(`[정책RAG] 문서 발췌 및 진단명(${diag}) 암호화 완료`,'log-success');
+log(`[정책RAG] 상세 정책 문서 발췌 및 진단명 암호화 완료`,'log-success');
 },d);
 return d;
 }
