@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>암호화 엔진 아키텍처 — AX Tech WG</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0e1a;color:#e0e6f0;font-family:'Segoe UI',sans-serif;min-height:100vh}
+header{display:flex;justify-content:space-between;align-items:center;padding:24px 40px;border-bottom:1px solid rgba(0,243,255,.15)}
+header h1{font-size:28px;background:linear-gradient(90deg,#00f3ff,#7b61ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+header small{display:block;color:#6b7a99;font-size:13px;margin-top:4px}
+.tabs{display:flex;gap:12px}
+.tab{padding:10px 20px;border-radius:20px;border:1px solid rgba(0,243,255,.25);background:transparent;color:#8899bb;cursor:pointer;font-size:14px;transition:.3s}
+.tab:hover,.tab.active{background:linear-gradient(135deg,#00f3ff22,#7b61ff22);color:#00f3ff;border-color:#00f3ff}
+main{max-width:1200px;margin:0 auto;padding:40px 24px}
+.section-title{font-size:22px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.section-title::before{content:'';width:4px;height:28px;background:#00f3ff;border-radius:2px}
+.subtitle{color:#7b8faa;font-size:15px;margin-bottom:32px;margin-left:14px}
+.principle-box{background:linear-gradient(135deg,rgba(0,243,255,.08),rgba(123,97,255,.05));border:1px solid rgba(0,243,255,.2);border-radius:16px;padding:28px 32px;margin-bottom:36px}
+.principle-box h3{color:#00f3ff;font-size:18px;margin-bottom:12px}
+.principle-box p{color:#a0b4cc;font-size:14px;line-height:1.8}
+.principle-box strong{color:#e0e6f0}
+.ratio-bar{display:flex;height:36px;border-radius:10px;overflow:hidden;margin-bottom:12px;border:1px solid rgba(0,243,255,.15)}
+.ratio-bar div{display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;transition:.3s}
+.r1{background:linear-gradient(90deg,#00f3ff,#0099cc);flex:5}
+.r2{background:linear-gradient(90deg,#7b61ff,#5a3fd6);flex:3}
+.r3{background:linear-gradient(90deg,#f59e0b,#d97706);flex:1}
+.r4{background:linear-gradient(90deg,#10b981,#059669);flex:1}
+.ratio-legend{display:flex;gap:24px;flex-wrap:wrap;margin-bottom:40px;font-size:13px;color:#7b8faa}
+.ratio-legend span::before{content:'●';margin-right:6px}
+.leg1::before{color:#00f3ff!important}.leg2::before{color:#7b61ff!important}.leg3::before{color:#f59e0b!important}.leg4::before{color:#10b981!important}
+.pipeline{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:40px}
+.step-card{background:rgba(15,20,40,.8);border:1px solid rgba(0,243,255,.12);border-radius:14px;padding:24px;position:relative;transition:.3s}
+.step-card:hover{border-color:#00f3ff;box-shadow:0 0 20px rgba(0,243,255,.1)}
+.step-badge{display:inline-block;padding:4px 14px;border-radius:12px;font-size:11px;font-weight:700;margin-bottom:16px}
+.b1{background:#00f3ff33;color:#00f3ff}.b2{background:#7b61ff33;color:#7b61ff}.b3{background:#f59e0b33;color:#f59e0b}.b4{background:#10b98133;color:#10b981}
+.step-icon{font-size:28px;margin-bottom:12px}
+.step-card h4{font-size:16px;margin-bottom:8px;color:#e0e6f0}
+.step-card p{font-size:13px;color:#7b8faa;line-height:1.6}
+.step-tag{display:inline-block;padding:4px 12px;border-radius:8px;font-size:11px;margin-top:12px;font-weight:600}
+.t1{background:#00f3ff22;color:#00f3ff;border:1px solid #00f3ff44}
+.t2{background:#7b61ff22;color:#7b61ff;border:1px solid #7b61ff44}
+.t3{background:#f59e0b22;color:#f59e0b;border:1px solid #f59e0b44}
+.t4{background:#10b98122;color:#10b981;border:1px solid #10b98144}
+.arrow{position:absolute;right:-14px;top:50%;color:#3a4a66;font-size:18px}
+.summary-box{background:rgba(15,20,40,.9);border:1px solid rgba(0,243,255,.15);border-radius:16px;padding:32px;margin-bottom:40px}
+.summary-box h3{font-size:18px;margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.summary-box h3 span{font-size:24px}
+.flow-steps{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:24px}
+.flow-chip{padding:10px 18px;border-radius:10px;font-size:13px;font-weight:600}
+.fc1{background:#00f3ff15;color:#00f3ff;border:1px solid #00f3ff33}
+.fc2{background:#7b61ff15;color:#7b61ff;border:1px solid #7b61ff33}
+.fc3{background:#f59e0b15;color:#f59e0b;border:1px solid #f59e0b33}
+.fc4{background:#10b98115;color:#10b981;border:1px solid #10b98133}
+.flow-arrow{color:#3a4a66;font-size:14px}
+.summary-box .note{font-size:14px;font-weight:700;color:#e0e6f0;margin-bottom:12px;padding:12px 0;border-top:1px solid rgba(0,243,255,.1)}
+.summary-box .detail{font-size:13px;color:#7b8faa;line-height:1.8}
+.demo-section{margin-top:48px}
+.demo-panel{background:rgba(15,20,40,.9);border:1px solid rgba(0,243,255,.15);border-radius:16px;padding:32px;margin-top:20px}
+.demo-controls{display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap;align-items:center}
+.btn{padding:12px 28px;border-radius:12px;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:.3s;display:flex;align-items:center;gap:8px}
+.btn-start{background:linear-gradient(135deg,#00f3ff,#0099cc);color:#0a0e1a}
+.btn-start:hover{box-shadow:0 0 24px rgba(0,243,255,.4);transform:translateY(-1px)}
+.btn-end{background:linear-gradient(135deg,#ff4757,#c0392b);color:#fff}
+.btn-end:hover{box-shadow:0 0 24px rgba(255,71,87,.4);transform:translateY(-1px)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+.session-info{display:flex;gap:24px;margin-bottom:20px;flex-wrap:wrap}
+.info-chip{padding:8px 16px;border-radius:8px;font-size:13px;background:rgba(0,243,255,.08);border:1px solid rgba(0,243,255,.15);color:#7b8faa}
+.info-chip strong{color:#00f3ff}
+.data-table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13px}
+.data-table th{text-align:left;padding:12px 16px;background:rgba(0,243,255,.06);color:#00f3ff;border-bottom:1px solid rgba(0,243,255,.15);font-weight:600}
+.data-table td{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.04);color:#a0b4cc;font-family:'Consolas',monospace;word-break:break-all}
+.data-table tr:hover td{background:rgba(0,243,255,.03)}
+.status-badge{display:inline-block;padding:4px 12px;border-radius:6px;font-size:11px;font-weight:700}
+.status-active{background:#10b98133;color:#10b981}
+.status-inactive{background:#ff475733;color:#ff4757}
+.status-encrypted{background:#7b61ff33;color:#7b61ff}
+.status-pass{background:#10b98133;color:#10b981}
+.sens-badge{display:inline-block;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700}
+.sens-y{background:#ff475722;color:#ff4757;border:1px solid #ff475744}
+.sens-n{background:#10b98122;color:#10b981;border:1px solid #10b98144}
+.log-area{background:#060a14;border:1px solid rgba(0,243,255,.1);border-radius:10px;padding:16px;margin-top:20px;max-height:200px;overflow-y:auto;font-family:'Consolas',monospace;font-size:12px;color:#5a6a88;line-height:1.8}
+.log-area .log-time{color:#3a4a66}.log-area .log-info{color:#00f3ff}.log-area .log-warn{color:#f59e0b}.log-area .log-error{color:#ff4757}.log-area .log-success{color:#10b981}
+@media(max-width:900px){.pipeline{grid-template-columns:1fr 1fr}.arrow{display:none}}
+@media(max-width:600px){.pipeline{grid-template-columns:1fr}header{flex-direction:column;gap:16px}.tabs{flex-wrap:wrap}}
+</style>
+</head>
+<body>
+<header>
+<div><h1>Agent 하네스 아키텍처</h1><small>AI Board × AX Tech WG · 2026 · v1.0</small></div>
+<div class="tabs">
+<a class="tab" href="https://hjunkim0761.github.io/harness_architecture/agent_harness_architecture_v1.0.html" target="_blank">아키텍처</a>
+<a class="tab" href="https://hjunkim0761.github.io/harness_architecture/agent_harness_architecture_v1.0.html" target="_blank">데이터 흐름</a>
+<a class="tab" href="https://hjunkim0761.github.io/harness_architecture/agent_harness_architecture_v1.0.html" target="_blank">레시피·스킬</a>
+<div class="tab active">암호화 엔진</div>
+</div>
+</header>
+
+<main>
+<!-- 원칙 박스 -->
+<div class="principle-box">
+<h3>🔐 세션 기반 암호화 엔진 설계</h3>
+<p><strong>SCZ가 원본 데이터의 암호화·복호화를 전담하고, 세션 생명주기에 따라 키를 관리한다.</strong> — Agent는 암호화된 값만 수신하며 원본에 접근하지 않는다.<br>
+<strong>세션 생성 시 랜덤 키로 암호화</strong>하고, <strong>Agent 업무 처리가 완료(세션 종료)되면 암호화 값을 즉시 삭제</strong>한다.</p>
+</div>
+
+<!-- 섹션 타이틀 -->
+<div class="section-title">민감정보 암호화 파이프라인</div>
+<div class="subtitle">세션 생명주기 기반 암호화·복호화·삭제 흐름</div>
+
+<!-- 비율 바 -->
+<div class="ratio-bar">
+<div class="r1">50% 키 생성·암호화</div>
+<div class="r2">30% 세션 바인딩</div>
+<div class="r3">10%</div>
+<div class="r4">10%</div>
+</div>
+<div class="ratio-legend">
+<span class="leg1">AES-256 랜덤 키 생성 + 필드별 암호화 (CPU)</span>
+<span class="leg2">세션 ID 바인딩 — 키·암호문 매핑 저장</span>
+<span class="leg3">Agent 전달 — 암호화된 값만 전송</span>
+<span class="leg4">세션 종료 — 키·암호문 즉시 삭제</span>
+</div>
+
+<!-- 파이프라인 4단계 -->
+<div class="pipeline">
+<div class="step-card">
+<span class="step-badge b1">STEP 1</span>
+<div class="step-icon">🔑</div>
+<h4>랜덤 키 생성</h4>
+<p>세션 생성 시 AES-256 랜덤 키 발급<br>세션 ID에 키 바인딩</p>
+<div class="step-tag t1">AES-256 / CBC</div>
+<span class="arrow">→</span>
+</div>
+<div class="step-card">
+<span class="step-badge b2">STEP 2</span>
+<div class="step-icon">🔒</div>
+<h4>필드별 암호화</h4>
+<p>PII 필드(이름·주민번호·계좌 등)<br>개별 암호화 처리</p>
+<div class="step-tag t2">필드 레벨 암호화</div>
+<span class="arrow">→</span>
+</div>
+<div class="step-card">
+<span class="step-badge b3">STEP 3</span>
+<div class="step-icon">📡</div>
+<h4>Agent 전달</h4>
+<p>암호화된 값만 Agent에 전달<br>원본 PII 접근 불가</p>
+<div class="step-tag t3">암호문 Only</div>
+<span class="arrow">→</span>
+</div>
+<div class="step-card">
+<span class="step-badge b4">OUTPUT</span>
+<div class="step-icon">🗑️</div>
+<h4>세션 종료·삭제</h4>
+<p>Agent 업무 완료 시<br>키·암호문 즉시 파기</p>
+<div class="step-tag t4">Zero Retention</div>
+</div>
+</div>
+
+<!-- 파이프라인 요약 -->
+<div class="summary-box">
+<h3><span>⚡</span> 전체 파이프라인 요약</h3>
+<div class="flow-steps">
+<div class="flow-chip fc1">① 랜덤 키 생성<br><small>AES-256 세션 키</small></div>
+<span class="flow-arrow">→</span>
+<div class="flow-chip fc2">② 필드별 암호화<br><small>PII 개별 처리</small></div>
+<span class="flow-arrow">→</span>
+<div class="flow-chip fc3">③ Agent 전달<br><small>암호문만 전송</small></div>
+<span class="flow-arrow">→</span>
+<div class="flow-chip fc4">④ 세션 종료·삭제<br><small>키·암호문 파기</small></div>
+</div>
+<div class="note">SCZ = 키 생성 + 암호화 + 세션 관리 + 삭제 | Agent = 암호문 기반 판단만 수행</div>
+<div class="detail">
+키는 세션 생성 시 1회 발급 → 세션 종료 시 즉시 삭제 (Zero Retention 정책)<br>
+Agent는 복호화 키에 접근할 수 없으며, 암호화된 범주값만으로 업무 처리<br>
+모든 암호화·삭제 이벤트는 Audit Log에 기록됨
+</div>
+</div>
+
+<!-- 라이브 데모 -->
+<div class="demo-section">
+<div class="section-title">암호화 엔진 라이브 데모</div>
+<div class="subtitle">AES-256 + Seed(생성날짜) 기반 결정적 암호화 — 동일 원본 = 동일 암호문으로 Agent가 값 비교 가능</div>
+
+<div class="demo-panel">
+<div class="demo-controls">
+<button class="btn btn-start" id="btnStart" onclick="startSession()">🔑 세션 생성 · 암호화</button>
+<button class="btn btn-end" id="btnEnd" onclick="endSession()" disabled>🗑️ 세션 종료 · 삭제</button>
+</div>
+
+<div class="session-info" id="sessionInfo" style="display:none">
+<div class="info-chip">세션 ID: <strong id="sid">-</strong></div>
+<div class="info-chip">상태: <strong><span class="status-badge status-active" id="statusBadge">ACTIVE</span></strong></div>
+<div class="info-chip">Seed (생성날짜): <strong id="seedVal" style="color:#f59e0b">-</strong></div>
+<div class="info-chip">AES-256 키: <strong id="encKey" style="color:#7b61ff">-</strong></div>
+</div>
+
+<!-- 소스 1: OCR 증빙 -->
+<div class="source-label src-ocr">📄 소스 ① OCR 증빙 데이터</div>
+<table class="data-table"><thead><tr><th>필드</th><th>구분</th><th>원본 값</th><th>암호화 결과</th><th>상태</th></tr></thead>
+<tbody id="tb1"></tbody></table>
+
+<!-- 소스 2: 사내시스템 조회 -->
+<div class="source-label src-sys" style="margin-top:28px">🏢 소스 ② 사내시스템 조회 (중복 확인용 이력)</div>
+<table class="data-table"><thead><tr><th>필드</th><th>구분</th><th>원본 값</th><th>암호화 결과</th><th>일치 여부</th><th>상태</th></tr></thead>
+<tbody id="tb2"></tbody></table>
+
+<!-- 소스 3: 정책 RAG -->
+<div class="source-label src-rag" style="margin-top:28px">📋 소스 ③ 정책 RAG 확인 데이터</div>
+<table class="data-table"><thead><tr><th>필드</th><th>구분</th><th>원본 값</th><th>암호화 결과</th><th>OCR 일치</th><th>상태</th></tr></thead>
+<tbody id="tb3"></tbody></table>
+
+<div class="log-area" id="logArea">
+<div><span class="log-time">[시스템]</span> 암호화 엔진 초기화 완료. 세션을 생성하세요.</div>
+</div>
+</div>
+</div>
+</main>
+
+<script>
+let session=null;
+function ts(){return new Date().toLocaleTimeString('ko-KR',{hour12:false})}
+function log(msg,cls='log-info'){
+const el=document.getElementById('logArea');
+el.innerHTML+=`<div><span class="log-time">[${ts()}]</span> <span class="${cls}">${msg}</span></div>`;
+el.scrollTop=el.scrollHeight;
+}
+function randHex(n){let s='';for(let i=0;i<n;i++)s+='0123456789abcdef'[Math.random()*16|0];return s}
+
+// 결정적 해시: 같은 seed+text → 같은 암호문 (충돌 방지 강화)
+function deterministicEnc(seed,text){
+const input=seed+'::'+text;
+// FNV-1a inspired multi-round hash
+let h1=0x811c9dc5, h2=0xc6a4a793;
+for(let i=0;i<input.length;i++){
+const ch=input.charCodeAt(i);
+h1=Math.imul(h1^ch,0x01000193);
+h2=Math.imul(h2^(ch*(i+1)),0x5bd1e995);
+}
+const c='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+let r='';
+let s1=Math.abs(h1), s2=Math.abs(h2);
+for(let i=0;i<32;i++){
+s1=(Math.imul(s1,1103515245)+12345)>>>0;
+s2=(Math.imul(s2,1664525)+1013904223)>>>0;
+r+=c[(s1^s2)%64];
+}
+return r+'==';
+}
+
+// 데이터 정의
+const OCR=[
+{f:'이름',v:'홍길동',sens:true},
+{f:'주민등록번호',v:'900101-1234567',sens:true},
+{f:'진단명',v:'급성 편도염',sens:true},
+{f:'병원',v:'서울강남 좋은이비인후과',sens:true},
+{f:'청구금액',v:'48,500원',sens:false},
+{f:'비급여금액',v:'0원',sens:false},
+{f:'신청일',v:'2026-04-07',sens:false}
+];
+const SYS=[
+{f:'이름',v:'홍길동',sens:true},         // 동일 → 암호문 일치
+{f:'주민등록번호',v:'900101-1234567',sens:true}, // 동일 → 암호문 일치
+{f:'진단명',v:'알레르기성 비염',sens:true},   // 다름 → 암호문 불일치
+{f:'병원',v:'분당 미래이비인후과',sens:true},  // 다름 → 암호문 불일치
+{f:'청구금액',v:'32,000원',sens:false},
+{f:'신청일',v:'2025-11-15',sens:false}
+];
+const RAG=[
+{f:'진단명',v:'급성 편도염',sens:true},  // OCR과 동일 → 암호문 일치
+{f:'지급 여부',v:'가능',sens:false},
+{f:'정책버전',v:'2026년 1월',sens:false}
+];
+
+function fillTable(tbId,data,seed,ocrMap,showMatch,srcLabel,delay0){
+const tb=document.getElementById(tbId);
+tb.innerHTML='';
+let d=delay0;
+data.forEach((item,i)=>{
+d+=350;
+setTimeout(()=>{
+const tr=document.createElement('tr');
+tr.style.animation='fadeIn .4s ease';
+const enc=item.sens?deterministicEnc(seed,item.v):null;
+const sensHtml=item.sens?'<span class="sens-badge sens-y">민감</span>':'<span class="sens-badge sens-n">비민감</span>';
+let matchHtml='';
+if(showMatch&&item.sens&&ocrMap){
+const ocrEnc=ocrMap[item.f];
+if(ocrEnc&&ocrEnc===enc){matchHtml='<td><span class="status-badge status-active">✓ 일치</span></td>';}
+else if(ocrEnc){matchHtml='<td><span class="status-badge status-inactive">✗ 불일치</span></td>';}
+else{matchHtml='<td style="color:#3a4a66">—</td>';}
+}else if(showMatch){matchHtml='<td style="color:#3a4a66">—</td>';}
+if(item.sens){
+tr.innerHTML=`<td>${item.f}</td><td>${sensHtml}</td><td style="color:#ff4757;text-decoration:line-through">${item.v}</td><td style="color:#7b61ff;font-size:11px">${enc}</td>${matchHtml}<td><span class="status-badge status-encrypted">암호화됨</span></td>`;
+log(`[${srcLabel}] ${item.f}: ${item.v} → ${enc.substring(0,20)}...`,'log-info');
+}else{
+tr.innerHTML=`<td>${item.f}</td><td>${sensHtml}</td><td>${item.v}</td><td style="color:#10b981">${item.v}</td>${matchHtml}<td><span class="status-badge status-pass">원본 전달</span></td>`;
+log(`[${srcLabel}] ${item.f}: ${item.v} (비민감)`,'log-success');
+}
+tb.appendChild(tr);
+},d);
+});
+return d;
+}
+
+function startSession(){
+const sid='SES-'+randHex(8).toUpperCase();
+const today=new Date();
+const seed=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+const key=randHex(64);
+session={sid,seed,key};
+
+document.getElementById('sessionInfo').style.display='flex';
+document.getElementById('sid').textContent=sid;
+document.getElementById('seedVal').textContent=seed;
+document.getElementById('encKey').textContent='AES256(seed='+seed+') '+key.substring(0,12)+'...';
+document.getElementById('statusBadge').textContent='ACTIVE';
+document.getElementById('statusBadge').className='status-badge status-active';
+document.getElementById('btnStart').disabled=true;
+document.getElementById('btnEnd').disabled=false;
+
+log(`세션 생성: ${sid}`,'log-success');
+log(`Seed (생성날짜): ${seed}`,'log-warn');
+log(`AES-256 키 = PBKDF2(seed=${seed}) → ${key.substring(0,24)}...`,'log-info');
+
+// OCR 암호문 맵 (비교용)
+const ocrMap={};
+OCR.forEach(item=>{if(item.sens)ocrMap[item.f]=deterministicEnc(seed,item.v);});
+
+let d1=fillTable('tb1',OCR,seed,null,false,'OCR증빙',0);
+let d2=fillTable('tb2',SYS,seed,ocrMap,true,'사내시스템',d1+200);
+let d3=fillTable('tb3',RAG,seed,ocrMap,true,'정책RAG',d1+d2+200);
+
+setTimeout(()=>{
+log('─── 암호문 비교 결과 ───','log-warn');
+log('이름: OCR ↔ 사내시스템 → ✓ 일치 (동일인 확인)','log-success');
+log('주민등록번호: OCR ↔ 사내시스템 → ✓ 일치 (동일인 확인)','log-success');
+log('진단명: OCR ↔ 사내시스템 → ✗ 불일치 (중복 청구 아님)','log-error');
+log('병원: OCR ↔ 사내시스템 → ✗ 불일치 (다른 병원)','log-error');
+log('진단명: OCR ↔ 정책RAG → ✓ 일치 (정책 적용 가능)','log-success');
+log('✅ Agent 판단: 동일인·비중복·정책적용가능 → 지급 승인 추천','log-success');
+},d1+d2+d3+800);
+}
+
+function endSession(){
+if(!session)return;
+log(`세션 종료 요청: ${session.sid}`,'log-warn');
+['tb1','tb2','tb3'].forEach(id=>{
+const rows=document.getElementById(id).querySelectorAll('tr');
+rows.forEach(r=>{
+const cells=r.querySelectorAll('td');
+const hasSens=r.querySelector('.sens-y');
+if(hasSens){
+r.style.opacity='0.3';
+cells[3].textContent='[삭제됨]';
+cells[3].style.color='#ff4757';
+}
+});
+});
+setTimeout(()=>{
+log(`🔑 Seed(${session.seed}) 기반 암호화 키 파기`,'log-error');
+log(`🗑️ 세션 ${session.sid} 완전 종료. 모든 암호문 삭제.`,'log-warn');
+document.getElementById('statusBadge').textContent='TERMINATED';
+document.getElementById('statusBadge').className='status-badge status-inactive';
+document.getElementById('encKey').textContent='[파기됨]';
+document.getElementById('encKey').style.color='#ff4757';
+document.getElementById('seedVal').textContent='[파기됨]';
+document.getElementById('seedVal').style.color='#ff4757';
+session=null;
+document.getElementById('btnStart').disabled=false;
+document.getElementById('btnEnd').disabled=true;
+},800);
+}
+</script>
+<style>
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.source-label{font-size:15px;font-weight:700;margin-top:24px;margin-bottom:8px;padding:8px 16px;border-radius:8px;display:inline-block}
+.src-ocr{background:#00f3ff15;color:#00f3ff;border:1px solid #00f3ff33}
+.src-sys{background:#f59e0b15;color:#f59e0b;border:1px solid #f59e0b33}
+.src-rag{background:#7b61ff15;color:#7b61ff;border:1px solid #7b61ff33}
+</style>
+</body>
+</html>
