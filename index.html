@@ -207,8 +207,8 @@ Agent는 복호화 키에 접근할 수 없으며, 암호화된 범주값만으�
 <tbody id="tb2"></tbody></table>
 
 <!-- 소스 3: 정책 RAG -->
-<div class="source-label src-rag" style="margin-top:28px">📋 소스 ③ 정책 RAG 확인 데이터</div>
-<table class="data-table"><thead><tr><th>필드</th><th>구분</th><th>원본 값</th><th>암호화 결과</th><th>OCR 일치</th><th>상태</th></tr></thead>
+<div class="source-label src-rag" style="margin-top:28px">📋 소스 ③ 정책 RAG 확인 데이터 (문서 발췌)</div>
+<table class="data-table"><thead><tr><th style="width:70%">정책 본문 (RAG 발췌 내역)</th><th>OCR 일치</th><th>상태</th></tr></thead>
 <tbody id="tb3"></tbody></table>
 
 <div class="log-area" id="logArea">
@@ -304,6 +304,27 @@ tb.appendChild(tr);
 return d;
 }
 
+function fillRagText(seed,ocrMap,delay0){
+const tb=document.getElementById('tb3');
+tb.innerHTML='';
+const diag="급성 편도염";
+const enc=deterministicEnc(seed,diag);
+const ocrEnc=ocrMap?ocrMap['진단명']:null;
+const isMatch=(ocrEnc===enc);
+
+let d=delay0+350;
+setTimeout(()=>{
+const tr=document.createElement('tr');
+tr.style.animation='fadeIn .4s ease';
+const richText=`사내 복지규정 의료비 지급 조항에 따르면 <strong style="color:#e0e6f0">${diag}</strong>(<span class="enc-part" style="color:#7b61ff;font-size:11px">${enc}</span>)에 해당하는 질병에 대한 급여 비용은 구성원에게 100% 지급한다. <br><small style="color:#7b8faa">출처: 사내 복지-의료비 가이드 (2026년 1월 개정)</small>`;
+const matchHtml=isMatch?'<td><span class="status-badge status-active">✓ 일치</span></td>':'<td><span class="status-badge status-inactive">✗ 불일치</span></td>';
+tr.innerHTML=`<td style="line-height:1.6;color:#a0b4cc">${richText}</td>${matchHtml}<td><span class="status-badge status-encrypted">암호화됨</span></td>`;
+tb.appendChild(tr);
+log(`[정책RAG] 문서 발췌 및 진단명(${diag}) 암호화 완료`,'log-success');
+},d);
+return d;
+}
+
 function startSession(){
 const sid='SES-'+randHex(8).toUpperCase();
 const today=new Date();
@@ -330,7 +351,7 @@ OCR.forEach(item=>{if(item.sens)ocrMap[item.f]=deterministicEnc(seed,item.v);});
 
 let d1=fillTable('tb1',OCR,seed,null,false,'OCR증빙',0);
 let d2=fillTable('tb2',SYS,seed,ocrMap,true,'사내시스템',d1+200);
-let d3=fillTable('tb3',RAG,seed,ocrMap,true,'정책RAG',d1+d2+200);
+let d3=fillRagText(seed,ocrMap,d1+d2+200);
 
 setTimeout(()=>{
 log('─── 암호문 비교 결과 ───','log-warn');
@@ -350,11 +371,20 @@ log(`세션 종료 요청: ${session.sid}`,'log-warn');
 const rows=document.getElementById(id).querySelectorAll('tr');
 rows.forEach(r=>{
 const cells=r.querySelectorAll('td');
+if(id==='tb3'){
+r.style.opacity='0.3';
+const encPart=r.querySelector('.enc-part');
+if(encPart)encPart.textContent='[삭제됨]';
+if(encPart)encPart.style.color='#ff4757';
+cells[2].innerHTML='<span class="status-badge status-inactive">삭제</span>';
+}else{
 const hasSens=r.querySelector('.sens-y');
 if(hasSens){
 r.style.opacity='0.3';
 cells[3].textContent='[삭제됨]';
 cells[3].style.color='#ff4757';
+cells[4].innerHTML='<span class="status-badge status-inactive">삭제</span>';
+}
 }
 });
 });
