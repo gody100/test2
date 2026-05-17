@@ -3,412 +3,413 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>암호화 엔진 아키텍처 — AX Tech WG</title>
+<title>Master Policy 엔진 아키텍처 — AX Tech WG</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0e1a;color:#e0e6f0;font-family:'Segoe UI',sans-serif;min-height:100vh}
-header{display:flex;justify-content:space-between;align-items:center;padding:24px 40px;border-bottom:1px solid rgba(0,243,255,.15)}
-header h1{font-size:28px;background:linear-gradient(90deg,#00f3ff,#7b61ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-header small{display:block;color:#6b7a99;font-size:13px;margin-top:4px}
-.tabs{display:flex;gap:12px}
-.tab{padding:10px 20px;border-radius:20px;border:1px solid rgba(0,243,255,.25);background:transparent;color:#8899bb;cursor:pointer;font-size:14px;transition:.3s}
-.tab:hover,.tab.active{background:linear-gradient(135deg,#00f3ff22,#7b61ff22);color:#00f3ff;border-color:#00f3ff}
-main{max-width:1200px;margin:0 auto;padding:40px 24px}
-.section-title{font-size:22px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:10px}
-.section-title::before{content:'';width:4px;height:28px;background:#00f3ff;border-radius:2px}
-.subtitle{color:#7b8faa;font-size:15px;margin-bottom:32px;margin-left:14px}
-.principle-box{background:linear-gradient(135deg,rgba(0,243,255,.08),rgba(123,97,255,.05));border:1px solid rgba(0,243,255,.2);border-radius:16px;padding:28px 32px;margin-bottom:36px}
-.principle-box h3{color:#00f3ff;font-size:18px;margin-bottom:12px}
-.principle-box p{color:#a0b4cc;font-size:14px;line-height:1.8}
-.principle-box strong{color:#e0e6f0}
-.ratio-bar{display:flex;height:36px;border-radius:10px;overflow:hidden;margin-bottom:12px;border:1px solid rgba(0,243,255,.15)}
-.ratio-bar div{display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;transition:.3s}
-.r1{background:linear-gradient(90deg,#00f3ff,#0099cc);flex:5}
-.r2{background:linear-gradient(90deg,#7b61ff,#5a3fd6);flex:3}
-.r3{background:linear-gradient(90deg,#f59e0b,#d97706);flex:1}
-.r4{background:linear-gradient(90deg,#10b981,#059669);flex:1}
-.ratio-legend{display:flex;gap:24px;flex-wrap:wrap;margin-bottom:40px;font-size:13px;color:#7b8faa}
-.ratio-legend span::before{content:'●';margin-right:6px}
-.leg1::before{color:#00f3ff!important}.leg2::before{color:#7b61ff!important}.leg3::before{color:#f59e0b!important}.leg4::before{color:#10b981!important}
-.pipeline{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:40px}
-.step-card{background:rgba(15,20,40,.8);border:1px solid rgba(0,243,255,.12);border-radius:14px;padding:24px;position:relative;transition:.3s}
-.step-card:hover{border-color:#00f3ff;box-shadow:0 0 20px rgba(0,243,255,.1)}
-.step-badge{display:inline-block;padding:4px 14px;border-radius:12px;font-size:11px;font-weight:700;margin-bottom:16px}
-.b1{background:#00f3ff33;color:#00f3ff}.b2{background:#7b61ff33;color:#7b61ff}.b3{background:#f59e0b33;color:#f59e0b}.b4{background:#10b98133;color:#10b981}
-.step-icon{font-size:28px;margin-bottom:12px}
-.step-card h4{font-size:16px;margin-bottom:8px;color:#e0e6f0}
-.step-card p{font-size:13px;color:#7b8faa;line-height:1.6}
-.step-tag{display:inline-block;padding:4px 12px;border-radius:8px;font-size:11px;margin-top:12px;font-weight:600}
-.t1{background:#00f3ff22;color:#00f3ff;border:1px solid #00f3ff44}
-.t2{background:#7b61ff22;color:#7b61ff;border:1px solid #7b61ff44}
-.t3{background:#f59e0b22;color:#f59e0b;border:1px solid #f59e0b44}
-.t4{background:#10b98122;color:#10b981;border:1px solid #10b98144}
-.arrow{position:absolute;right:-14px;top:50%;color:#3a4a66;font-size:18px}
-.summary-box{background:rgba(15,20,40,.9);border:1px solid rgba(0,243,255,.15);border-radius:16px;padding:32px;margin-bottom:40px}
-.summary-box h3{font-size:18px;margin-bottom:20px;display:flex;align-items:center;gap:10px}
-.summary-box h3 span{font-size:24px}
-.flow-steps{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:24px}
-.flow-chip{padding:10px 18px;border-radius:10px;font-size:13px;font-weight:600}
-.fc1{background:#00f3ff15;color:#00f3ff;border:1px solid #00f3ff33}
-.fc2{background:#7b61ff15;color:#7b61ff;border:1px solid #7b61ff33}
-.fc3{background:#f59e0b15;color:#f59e0b;border:1px solid #f59e0b33}
-.fc4{background:#10b98115;color:#10b981;border:1px solid #10b98133}
-.flow-arrow{color:#3a4a66;font-size:14px}
-.summary-box .note{font-size:14px;font-weight:700;color:#e0e6f0;margin-bottom:12px;padding:12px 0;border-top:1px solid rgba(0,243,255,.1)}
-.summary-box .detail{font-size:13px;color:#7b8faa;line-height:1.8}
-.demo-section{margin-top:48px}
-.demo-panel{background:rgba(15,20,40,.9);border:1px solid rgba(0,243,255,.15);border-radius:16px;padding:32px;margin-top:20px}
-.demo-controls{display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap;align-items:center}
-.btn{padding:12px 28px;border-radius:12px;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:.3s;display:flex;align-items:center;gap:8px}
-.btn-start{background:linear-gradient(135deg,#00f3ff,#0099cc);color:#0a0e1a}
-.btn-start:hover{box-shadow:0 0 24px rgba(0,243,255,.4);transform:translateY(-1px)}
-.btn-end{background:linear-gradient(135deg,#ff4757,#c0392b);color:#fff}
-.btn-end:hover{box-shadow:0 0 24px rgba(255,71,87,.4);transform:translateY(-1px)}
-.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important;box-shadow:none!important}
-.session-info{display:flex;gap:24px;margin-bottom:20px;flex-wrap:wrap}
-.info-chip{padding:8px 16px;border-radius:8px;font-size:13px;background:rgba(0,243,255,.08);border:1px solid rgba(0,243,255,.15);color:#7b8faa}
-.info-chip strong{color:#00f3ff}
-.data-table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13px}
-.data-table th{text-align:left;padding:12px 16px;background:rgba(0,243,255,.06);color:#00f3ff;border-bottom:1px solid rgba(0,243,255,.15);font-weight:600}
-.data-table td{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.04);color:#a0b4cc;font-family:'Consolas',monospace;word-break:break-all}
-.data-table tr:hover td{background:rgba(0,243,255,.03)}
-.status-badge{display:inline-block;padding:4px 12px;border-radius:6px;font-size:11px;font-weight:700}
-.status-active{background:#10b98133;color:#10b981}
-.status-inactive{background:#ff475733;color:#ff4757}
-.status-encrypted{background:#7b61ff33;color:#7b61ff}
-.status-pass{background:#10b98133;color:#10b981}
-.sens-badge{display:inline-block;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700}
-.sens-y{background:#ff475722;color:#ff4757;border:1px solid #ff475744}
-.sens-n{background:#10b98122;color:#10b981;border:1px solid #10b98144}
-.log-area{background:#060a14;border:1px solid rgba(0,243,255,.1);border-radius:10px;padding:16px;margin-top:20px;max-height:200px;overflow-y:auto;font-family:'Consolas',monospace;font-size:12px;color:#5a6a88;line-height:1.8}
-.log-area .log-time{color:#3a4a66}.log-area .log-info{color:#00f3ff}.log-area .log-warn{color:#f59e0b}.log-area .log-error{color:#ff4757}.log-area .log-success{color:#10b981}
-@media(max-width:900px){.pipeline{grid-template-columns:1fr 1fr}.arrow{display:none}}
-@media(max-width:600px){.pipeline{grid-template-columns:1fr}header{flex-direction:column;gap:16px}.tabs{flex-wrap:wrap}}
+:root{
+  --bg:#0a0e1a;--panel:#0f1428;--panel2:#111a33;--line:rgba(0,243,255,.16);
+  --text:#e0e6f0;--muted:#7b8faa;--cyan:#00f3ff;--purple:#7b61ff;--orange:#f59e0b;
+  --green:#10b981;--red:#ff4757;--blue:#3b82f6;--yellow:#fbbf24;
+}
+body{background:radial-gradient(circle at 50% 0%,#111a33 0%,#0a0e1a 58%,#060913 100%);color:var(--text);font-family:'Segoe UI','Noto Sans KR','Malgun Gothic',sans-serif;min-height:100vh}
+header{display:flex;justify-content:space-between;align-items:center;padding:24px 40px;border-bottom:1px solid rgba(0,243,255,.15);background:rgba(6,9,19,.72);backdrop-filter:blur(10px);position:sticky;top:0;z-index:10}
+header h1{font-size:28px;background:linear-gradient(90deg,var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+header small{display:block;color:#6b7a99;font-size:13px;margin-top:4px}.tabs{display:flex;gap:12px;flex-wrap:wrap}.tab{padding:10px 20px;border-radius:20px;border:1px solid rgba(0,243,255,.25);background:transparent;color:#8899bb;cursor:pointer;font-size:14px;transition:.3s;text-decoration:none}.tab:hover,.tab.active{background:linear-gradient(135deg,#00f3ff22,#7b61ff22);color:var(--cyan);border-color:var(--cyan)}
+main{max-width:1240px;margin:0 auto;padding:40px 24px}.section-title{font-size:22px;font-weight:800;margin:40px 0 8px;display:flex;align-items:center;gap:10px}.section-title:first-of-type{margin-top:0}.section-title::before{content:'';width:4px;height:28px;background:var(--cyan);border-radius:2px}.subtitle{color:var(--muted);font-size:15px;margin-bottom:28px;margin-left:14px;line-height:1.75}.principle-box{background:linear-gradient(135deg,rgba(0,243,255,.09),rgba(123,97,255,.06));border:1px solid rgba(0,243,255,.24);border-radius:18px;padding:28px 32px;margin-bottom:34px;box-shadow:0 20px 60px rgba(0,0,0,.16)}.principle-box h3{color:var(--cyan);font-size:18px;margin-bottom:12px}.principle-box p{color:#a0b4cc;font-size:14px;line-height:1.9}.principle-box strong{color:#eef5ff}.warning-note{margin-top:14px;padding:12px 14px;border-radius:12px;background:rgba(255,193,7,.08);border:1px solid rgba(255,193,7,.28);font-size:13px;color:#e9d293;line-height:1.7}
+.ratio-bar{display:flex;height:40px;border-radius:12px;overflow:hidden;margin-bottom:12px;border:1px solid rgba(0,243,255,.15)}.ratio-bar div{display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff}.r1{background:linear-gradient(90deg,#00f3ff,#0099cc);flex:3}.r2{background:linear-gradient(90deg,#7b61ff,#5a3fd6);flex:3}.r3{background:linear-gradient(90deg,#10b981,#059669);flex:3}.r4{background:linear-gradient(90deg,#f59e0b,#d97706);flex:1.5}.ratio-legend{display:flex;gap:24px;flex-wrap:wrap;margin-bottom:40px;font-size:13px;color:#7b8faa}.ratio-legend span::before{content:'●';margin-right:6px}.leg1::before{color:var(--cyan)!important}.leg2::before{color:var(--purple)!important}.leg3::before{color:var(--green)!important}.leg4::before{color:var(--orange)!important}
+.pipeline{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:40px}.step-card{background:rgba(15,20,40,.82);border:1px solid rgba(0,243,255,.12);border-radius:16px;padding:24px;position:relative;transition:.3s;min-height:190px}.step-card:hover{border-color:var(--cyan);box-shadow:0 0 20px rgba(0,243,255,.1)}.step-badge{display:inline-block;padding:4px 14px;border-radius:12px;font-size:11px;font-weight:800;margin-bottom:16px}.b1{background:#00f3ff33;color:var(--cyan)}.b2{background:#7b61ff33;color:#a78bfa}.b3{background:#10b98133;color:var(--green)}.b4{background:#f59e0b33;color:var(--orange)}.step-icon{font-size:28px;margin-bottom:12px}.step-card h4{font-size:16px;margin-bottom:8px;color:#eef5ff}.step-card p{font-size:13px;color:#8fa2bd;line-height:1.65}.step-tag{display:inline-block;padding:4px 12px;border-radius:8px;font-size:11px;margin-top:12px;font-weight:700}.t1{background:#00f3ff22;color:var(--cyan);border:1px solid #00f3ff44}.t2{background:#7b61ff22;color:#a78bfa;border:1px solid #7b61ff44}.t3{background:#10b98122;color:var(--green);border:1px solid #10b98144}.t4{background:#f59e0b22;color:var(--orange);border:1px solid #f59e0b44}.arrow{position:absolute;right:-14px;top:50%;color:#3a4a66;font-size:18px}
+.summary-box,.demo-panel,.matrix-panel{background:rgba(15,20,40,.9);border:1px solid rgba(0,243,255,.15);border-radius:18px;padding:30px;margin-bottom:36px}.summary-box h3,.demo-panel h3,.matrix-panel h3{font-size:18px;margin-bottom:18px;display:flex;align-items:center;gap:10px}.summary-box .note{font-size:14px;font-weight:800;color:#eef5ff;margin-bottom:12px;padding:12px 0;border-top:1px solid rgba(0,243,255,.1)}.summary-box .detail{font-size:13px;color:#8fa2bd;line-height:1.9}.flow-steps{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:22px}.flow-chip{padding:10px 16px;border-radius:10px;font-size:13px;font-weight:700}.fc1{background:#00f3ff15;color:var(--cyan);border:1px solid #00f3ff33}.fc2{background:#7b61ff15;color:#a78bfa;border:1px solid #7b61ff33}.fc3{background:#10b98115;color:var(--green);border:1px solid #10b98133}.fc4{background:#f59e0b15;color:var(--orange);border:1px solid #f59e0b33}.flow-arrow{color:#4b5d7a}
+.legend-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:14px}.legend-card{padding:14px;border-radius:14px;background:rgba(6,10,20,.55);border:1px solid rgba(255,255,255,.08)}.legend-card h4{font-size:13px;margin-bottom:8px}.legend-card p{font-size:12px;color:#8fa2bd;line-height:1.6}.lc1{border-color:rgba(123,97,255,.45)}.lc2{border-color:rgba(16,185,129,.45)}.lc3{border-color:rgba(0,243,255,.38)}.lc4{border-color:rgba(255,71,87,.4)}
+.demo-controls{display:flex;gap:14px;margin-bottom:22px;flex-wrap:wrap;align-items:center}.btn{padding:12px 24px;border-radius:12px;border:none;font-size:14px;font-weight:800;cursor:pointer;transition:.3s;display:flex;align-items:center;gap:8px}.btn-start{background:linear-gradient(135deg,#00f3ff,#0099cc);color:#0a0e1a}.btn-start:hover{box-shadow:0 0 24px rgba(0,243,255,.4);transform:translateY(-1px)}.btn-end{background:linear-gradient(135deg,#ff4757,#c0392b);color:#fff}.btn-end:hover{box-shadow:0 0 24px rgba(255,71,87,.4);transform:translateY(-1px)}.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important;box-shadow:none!important}.session-info{display:flex;gap:14px;margin-bottom:20px;flex-wrap:wrap}.info-chip{padding:8px 14px;border-radius:8px;font-size:13px;background:rgba(0,243,255,.08);border:1px solid rgba(0,243,255,.15);color:#8fa2bd}.info-chip strong{color:var(--cyan)}.phase-title{margin:28px 0 10px;display:flex;align-items:center;gap:8px;font-size:16px;font-weight:800;color:#eef5ff}.source-label{font-size:15px;font-weight:800;margin:28px 0 8px;padding:8px 16px;border-radius:10px;display:inline-block}.src-ocr{background:#00f3ff15;color:var(--cyan);border:1px solid #00f3ff33}.src-sys{background:#f59e0b15;color:var(--orange);border:1px solid #f59e0b33}.src-rag{background:#7b61ff15;color:#a78bfa;border:1px solid #7b61ff33}
+.table-wrap{overflow-x:auto;border-radius:12px;border:1px solid rgba(0,243,255,.08);margin-bottom:8px}.data-table{width:100%;border-collapse:collapse;font-size:12.5px;background:rgba(6,10,20,.35)}.data-table th{text-align:left;padding:12px 13px;background:rgba(0,243,255,.06);color:var(--cyan);border-bottom:1px solid rgba(0,243,255,.15);font-weight:800;white-space:nowrap}.data-table td{padding:12px 13px;border-bottom:1px solid rgba(255,255,255,.045);color:#a0b4cc;font-family:'Consolas','SF Mono',monospace;vertical-align:top;line-height:1.55}.data-table tr:last-child td{border-bottom:none}.data-table tr:hover td{background:rgba(0,243,255,.025)}.raw-value{color:#ff7784;text-decoration:line-through}.plain-value{color:#d5e1f4}.protected-value{color:#a78bfa;font-weight:700}.cat-value{color:#fbbf24;font-weight:700}.pass-value{color:#34d399;font-weight:700}.blocked-value{color:#ff7784;font-weight:700}.status-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:10.5px;font-weight:800;white-space:nowrap}.status-active{background:#10b98133;color:var(--green)}.status-inactive{background:#ff475733;color:var(--red)}.status-encrypted{background:#7b61ff33;color:#a78bfa}.status-pass{background:#10b98133;color:#34d399}.status-category{background:#f59e0b33;color:#fbbf24}.status-block{background:#ff475733;color:#ff7f8b}.status-plan{background:#00f3ff22;color:var(--cyan);border:1px solid #00f3ff33}.code-box{background:#050814;border:1px solid rgba(0,243,255,.12);border-radius:12px;padding:16px;white-space:pre-wrap;font-family:'Consolas','SF Mono',monospace;font-size:12px;line-height:1.7;color:#9fb3cd;overflow:auto}.code-box .k{color:#60a5fa}.code-box .v{color:#34d399}.code-box .p{color:#a78bfa}.code-box .w{color:#fbbf24}.code-box .r{color:#ff7784}.code-box .c{color:#52637b}.grid-2{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;margin-bottom:18px}.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.verify-card{background:rgba(6,10,20,.5);border:1px solid rgba(123,97,255,.28);border-radius:14px;padding:16px}.verify-card h4{font-size:13px;margin-bottom:10px;color:#eef5ff}.verify-card p{font-size:12px;color:#8fa2bd;line-height:1.7}.verify-result{margin-top:8px;padding:8px 10px;border-radius:8px;font-size:12px;font-weight:800}.vr-ok{background:#10b98122;color:#34d399;border:1px solid #10b98144}.vr-warn{background:#f59e0b22;color:#fbbf24;border:1px solid #f59e0b44}.vr-info{background:#00f3ff16;color:var(--cyan);border:1px solid #00f3ff33}.log-area{background:#050814;border:1px solid rgba(0,243,255,.1);border-radius:12px;padding:16px;margin-top:18px;max-height:220px;overflow-y:auto;font-family:'Consolas','SF Mono',monospace;font-size:12px;color:#5a6a88;line-height:1.8}.log-area .log-time{color:#3a4a66}.log-area .log-info{color:var(--cyan)}.log-area .log-warn{color:#fbbf24}.log-area .log-error{color:var(--red)}.log-area .log-success{color:var(--green)}.small-note{font-size:12px;color:#8398b5;line-height:1.75;margin:8px 0 0}.pill-row{display:flex;gap:8px;flex-wrap:wrap}.pill{padding:6px 10px;border-radius:999px;font-size:11px;font-weight:800}.pill-enc{background:#7b61ff22;color:#a78bfa;border:1px solid #7b61ff44}.pill-pass{background:#10b98122;color:#34d399;border:1px solid #10b98144}.pill-cat{background:#f59e0b22;color:#fbbf24;border:1px solid #f59e0b44}.pill-block{background:#ff475722;color:#ff7784;border:1px solid #ff475744}.agent-banner{padding:16px;border:1px solid rgba(123,97,255,.35);border-radius:14px;background:linear-gradient(135deg,rgba(123,97,255,.1),rgba(0,243,255,.05));margin:18px 0;font-size:13px;line-height:1.8;color:#b8c5d9}.agent-banner strong{color:#eef5ff}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:980px){.pipeline,.legend-grid,.grid-3{grid-template-columns:1fr 1fr}.grid-2{grid-template-columns:1fr}.arrow{display:none}header{align-items:flex-start;flex-direction:column}}
+@media(max-width:650px){.pipeline,.legend-grid,.grid-3{grid-template-columns:1fr}.tabs{width:100%}.tab{flex:1;text-align:center}main{padding:24px 14px}.principle-box,.summary-box,.demo-panel,.matrix-panel{padding:20px}}
 </style>
 </head>
 <body>
 <header>
-<div><h1>Agent 하네스 아키텍처</h1><small>AI Board × AX Tech WG · 2026 · v1.0</small></div>
-<div class="tabs">
-<a class="tab" href="https://hjunkim0761.github.io/harness_architecture/agent_harness_architecture_v1.0.html" target="_blank">아키텍처</a>
-<a class="tab" href="https://hjunkim0761.github.io/harness_architecture/agent_harness_architecture_v1.0.html" target="_blank">데이터 흐름</a>
-<a class="tab" href="https://hjunkim0761.github.io/harness_architecture/agent_harness_architecture_v1.0.html" target="_blank">레시피·스킬</a>
-<div class="tab active">암호화 엔진</div>
-</div>
+  <div><h1>Agent 하네스 아키텍처</h1><small>AI Board × AX Tech WG · 2026 · v1.2</small></div>
+  <div class="tabs">
+    <a class="tab" href="https://hjunkim0761.github.io/harness_architecture/agent_harness_architecture_v1.0.html" target="_blank">아키텍처</a>
+    <a class="tab" href="https://hjunkim0761.github.io/harness_architecture/agent_harness_architecture_v1.0.html" target="_blank">데이터 흐름</a>
+    <a class="tab" href="https://hjunkim0761.github.io/harness_architecture/agent_harness_architecture_v1.0.html" target="_blank">레시피·스킬</a>
+    <div class="tab active">Master Policy 엔진</div>
+  </div>
 </header>
 
 <main>
-<!-- 원칙 박스 -->
-<div class="principle-box">
-<h3>🔐 세션 기반 암호화 엔진 설계</h3>
-<p><strong>SCZ가 원본 데이터의 암호화·복호화를 전담하고, 세션 생명주기에 따라 키를 관리한다.</strong> — Agent는 암호화된 값만 수신하며 원본에 접근하지 않는다.<br>
-<strong>세션 생성 시 랜덤 키로 암호화</strong>하고, <strong>Agent 업무 처리가 완료(세션 종료)되면 암호화 값을 즉시 삭제</strong>한다.</p>
-</div>
+  <div class="principle-box">
+    <h3>🔐 Master Policy 엔진 설계 — Agent 계획, SCZ 실행</h3>
+    <p><strong>Agent LLM은 원문 데이터값을 보지 않고, 컬럼 정보와 레시피·스킬 설명서를 바탕으로 암호화·범주화·패스스루 처리계획을 생성한다.</strong><br>
+    SCZ는 OCR 추출 데이터, 사내 조회 데이터, 사내 정책 데이터의 3개 데이터셋을 만들고, Agent가 생성한 처리계획에 따라 실제 원문값을 암호화·범주화·패스스루·차단 처리한다.<br>
+    <strong>암호화 태그는 의미 해석용이 아니라 3개 데이터셋 간 동일성 비교용</strong>이며, Agent LLM에는 원문, 복호화 키, 원문-암호문 매핑 테이블이 전달되지 않는다.</p>
+    <div class="warning-note">화면의 원문 예시는 설명을 위한 SCZ 내부 예시입니다. 실제 Agent LLM은 컬럼명·데이터 타입·출처·업무 목적·레시피 태그 계약과 Master Policy 데이터만 수신합니다.</div>
+  </div>
 
-<!-- 섹션 타이틀 -->
-<div class="section-title">민감정보 암호화 파이프라인</div>
-<div class="subtitle">세션 생명주기 기반 암호화·복호화·삭제 흐름</div>
+  <div class="section-title">Master Policy 처리 파이프라인</div>
+  <div class="subtitle">사람이 데이터값마다 지정하지 않고, 레시피 태그 계약과 컬럼 메타데이터를 기반으로 Agent가 처리계획을 만들고 SCZ가 실제 처리한다.</div>
 
-<!-- 비율 바 -->
-<div class="ratio-bar">
-<div class="r1">50% 키 생성·암호화</div>
-<div class="r2">30% 세션 바인딩</div>
-<div class="r3">10%</div>
-<div class="r4">10%</div>
-</div>
-<div class="ratio-legend">
-<span class="leg1">AES-256 랜덤 키 생성 + 필드별 암호화 (CPU)</span>
-<span class="leg2">세션 ID 바인딩 — 키·암호문 매핑 저장</span>
-<span class="leg3">Agent 전달 — 암호화된 값만 전송</span>
-<span class="leg4">세션 종료 — 키·암호문 즉시 삭제</span>
-</div>
+  <div class="ratio-bar">
+    <div class="r1">컬럼 메타데이터</div>
+    <div class="r2">Agent 처리계획</div>
+    <div class="r3">SCZ Master Policy 처리</div>
+    <div class="r4">sLM 2차검증</div>
+  </div>
+  <div class="ratio-legend">
+    <span class="leg1">데이터셋 컬럼명·타입·출처·업무 목적</span>
+    <span class="leg2">Agent LLM + Master Policy Engine 스킬로 컬럼별 계획 생성</span>
+    <span class="leg3">SCZ가 실제 원문값에 암호화·범주화·패스스루·차단 실행</span>
+    <span class="leg4">선택적 sLM은 원문이 아닌 계획·Master Policy을 검증</span>
+  </div>
 
-<!-- 파이프라인 4단계 -->
-<div class="pipeline">
-<div class="step-card">
-<span class="step-badge b1">STEP 1</span>
-<div class="step-icon">🔑</div>
-<h4>랜덤 키 생성</h4>
-<p>세션 생성 시 AES-256 랜덤 키 발급<br>세션 ID에 키 바인딩</p>
-<div class="step-tag t1">AES-256 / CBC</div>
-<span class="arrow">→</span>
-</div>
-<div class="step-card">
-<span class="step-badge b2">STEP 2</span>
-<div class="step-icon">🔒</div>
-<h4>필드별 암호화</h4>
-<p>PII 필드(이름·주민번호·계좌 등)<br>개별 암호화 처리</p>
-<div class="step-tag t2">필드 레벨 암호화</div>
-<span class="arrow">→</span>
-</div>
-<div class="step-card">
-<span class="step-badge b3">STEP 3</span>
-<div class="step-icon">📡</div>
-<h4>Agent 전달</h4>
-<p>암호화된 값만 Agent에 전달<br>원본 PII 접근 불가</p>
-<div class="step-tag t3">암호문 Only</div>
-<span class="arrow">→</span>
-</div>
-<div class="step-card">
-<span class="step-badge b4">OUTPUT</span>
-<div class="step-icon">🗑️</div>
-<h4>세션 종료·삭제</h4>
-<p>Agent 업무 완료 시<br>키·암호문 즉시 파기</p>
-<div class="step-tag t4">Zero Retention</div>
-</div>
-</div>
+  <div class="pipeline">
+    <div class="step-card">
+      <span class="step-badge b1">STEP 1</span>
+      <div class="step-icon">📦</div>
+      <h4>SCZ 데이터셋 생성</h4>
+      <p>OCR 추출 데이터, 사내 조회 데이터, 사내 정책 데이터의 3개 데이터셋을 SCZ 내부에서 생성한다.</p>
+      <div class="step-tag t1">원문은 SCZ 내부</div><span class="arrow">→</span>
+    </div>
+    <div class="step-card">
+      <span class="step-badge b2">STEP 2</span>
+      <div class="step-icon">🤖</div>
+      <h4>Agent 처리계획 생성</h4>
+      <p>Agent LLM이 Master Policy Engine 스킬을 호출해 컬럼 정보와 레시피 태그 계약만으로 처리계획을 만든다.</p>
+      <div class="step-tag t2">원문값 미노출</div><span class="arrow">→</span>
+    </div>
+    <div class="step-card">
+      <span class="step-badge b3">STEP 3</span>
+      <div class="step-icon">🛡️</div>
+      <h4>SCZ Master Policy 처리</h4>
+      <p>SCZ가 계획에 따라 encrypted_tags, category_tags, pass_through, blocked_raw를 생성한다.</p>
+      <div class="step-tag t3">키·매핑 SCZ 격리</div><span class="arrow">→</span>
+    </div>
+    <div class="step-card">
+      <span class="step-badge b4">OUTPUT</span>
+      <div class="step-icon">⚖️</div>
+      <h4>Agent 지급 판단</h4>
+      <p>암호화 태그는 동일성 비교, 패스스루·범주화 태그는 복지제도 조건 판단에 사용한다.</p>
+      <div class="step-tag t4">최종 지급 여부</div>
+    </div>
+  </div>
 
-<!-- 파이프라인 요약 -->
-<div class="summary-box">
-<h3><span>⚡</span> 전체 파이프라인 요약</h3>
-<div class="flow-steps">
-<div class="flow-chip fc1">① 랜덤 키 생성<br><small>AES-256 세션 키</small></div>
-<span class="flow-arrow">→</span>
-<div class="flow-chip fc2">② 필드별 암호화<br><small>PII 개별 처리</small></div>
-<span class="flow-arrow">→</span>
-<div class="flow-chip fc3">③ Agent 전달<br><small>암호문만 전송</small></div>
-<span class="flow-arrow">→</span>
-<div class="flow-chip fc4">④ 세션 종료·삭제<br><small>키·암호문 파기</small></div>
-</div>
-<div class="note">SCZ = 키 생성 + 암호화 + 세션 관리 + 삭제 | Agent = 암호문 기반 판단만 수행</div>
-<div class="detail">
-키는 세션 생성 시 1회 발급 → 세션 종료 시 즉시 삭제 (Zero Retention 정책)<br>
-Agent는 복호화 키에 접근할 수 없으며, 암호화된 범주값만으로 업무 처리<br>
-모든 암호화·삭제 이벤트는 Audit Log에 기록됨
-</div>
-</div>
+  <div class="summary-box">
+    <h3><span>⚡</span> 전체 파이프라인 요약</h3>
+    <div class="flow-steps">
+      <div class="flow-chip fc1">① 3개 데이터셋 생성<br><small>OCR · 사내조회 · 정책</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-chip fc2">② Agent 처리계획<br><small>컬럼 기반 · 원문 없음</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-chip fc3">③ SCZ Master Policy 처리<br><small>암호화 · 범주화 · 패스스루</small></div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-chip fc4">④ Agent 최종판단<br><small>동일성 비교 + 제도 부합성</small></div>
+    </div>
+    <div class="note">Agent LLM = 처리계획 수립 + 최종 판단 | Master Policy Engine 스킬 = 판단 기준 제공 | SCZ = 실제 원문 처리·암호화·키 관리</div>
+    <div class="detail">
+      사람은 데이터값을 하나씩 지정하지 않고 레시피·스킬 설명서에 태그 처리 원칙을 정의한다.<br>
+      Agent LLM은 컬럼 메타데이터와 태그 계약으로 처리계획을 만들며, SCZ는 그 계획에 따라 실제 데이터값을 변환한다.<br>
+      선택적 sLM은 원문값이 아니라 태깅 계획·컬럼 메타데이터·Master Policy만 검증하여 누락·충돌·오분류 가능성을 잡는다.
+    </div>
+  </div>
 
-<!-- 라이브 데모 -->
-<div class="demo-section">
-<div class="section-title">암호화 엔진 라이브 데모</div>
-<div class="subtitle">AES-256 + Seed(생성날짜) 기반 결정적 암호화 — 동일 원본 = 동일 암호문으로 Agent가 값 비교 가능</div>
+  <div class="matrix-panel">
+    <h3><span>🧩</span> Master Policy Engine 스킬이 제공하는 처리 기준</h3>
+    <div class="legend-grid">
+      <div class="legend-card lc1"><h4 style="color:#a78bfa">암호화 태그</h4><p>민감정보이면서 동일성 비교가 필요한 값. 예: 주민번호, 신청자명, 진단명, 진단군, 병원명.</p></div>
+      <div class="legend-card lc2"><h4 style="color:#34d399">패스스루</h4><p>계산 또는 기간 판단에 필요한 저민감 값. 예: 신청금액, 진료일, 기존신청금액, 정책버전.</p></div>
+      <div class="legend-card lc3"><h4 style="color:#fbbf24">범주화 태그</h4><p>회사 제도 판단에 필요한 상태값·검증결과. 예: 수진자관계, 기관검증상태, 지원조건, 중복기준.</p></div>
+      <div class="legend-card lc4"><h4 style="color:#ff7784">차단</h4><p>Agent 판단에 불필요하거나 고위험 원문. 예: 주민번호 원문, 원문 진단명, 원문 병원명.</p></div>
+    </div>
+  </div>
 
-<div class="demo-panel">
-<div class="demo-controls">
-<button class="btn btn-start" id="btnStart" onclick="startSession()">🔑 세션 생성 · 암호화</button>
-<button class="btn btn-end" id="btnEnd" onclick="endSession()" disabled>🗑️ 세션 종료 · 삭제</button>
-</div>
+  <div class="demo-section">
+    <div class="section-title">의료비 Master Policy 라이브 데모</div>
+    <div class="subtitle">버튼을 누르면 SCZ가 3개 데이터셋을 만들고, Agent LLM이 컬럼 기반 처리계획을 생성한 뒤, SCZ가 Master Policy을 생성하는 흐름을 확인할 수 있습니다.</div>
 
-<div class="session-info" id="sessionInfo" style="display:none">
-<div class="info-chip">세션 ID: <strong id="sid">-</strong></div>
-<div class="info-chip">상태: <strong><span class="status-badge status-active" id="statusBadge">ACTIVE</span></strong></div>
-<div class="info-chip">Seed (생성날짜): <strong id="seedVal" style="color:#f59e0b">-</strong></div>
-<div class="info-chip">AES-256 키: <strong id="encKey" style="color:#7b61ff">-</strong></div>
-</div>
+    <div class="demo-panel">
+      <div class="demo-controls">
+        <button class="btn btn-start" id="btnStart" onclick="startSession()">▶ 의료비 Master Policy 생성</button>
+        <button class="btn btn-end" id="btnEnd" onclick="endSession()" disabled>🗑️ 세션 종료 · Master Policy 삭제</button>
+      </div>
 
-<!-- 소스 1: OCR 증빙 -->
-<div class="source-label src-ocr">📄 소스 ① OCR 증빙 데이터</div>
-<table class="data-table"><thead><tr><th>필드</th><th>구분</th><th>원본 값</th><th>암호화 결과</th><th>상태</th></tr></thead>
-<tbody id="tb1"></tbody></table>
+      <div class="session-info" id="sessionInfo" style="display:none">
+        <div class="info-chip">세션 ID: <strong id="sid">-</strong></div>
+        <div class="info-chip">상태: <strong><span class="status-badge status-active" id="statusBadge">ACTIVE</span></strong></div>
+        <div class="info-chip">암호화 기준일: <strong id="seedVal" style="color:#fbbf24">-</strong></div>
+        <div class="info-chip">세션 키: <strong id="encKey" style="color:#a78bfa">-</strong></div>
+      </div>
 
-<!-- 소스 2: 사내시스템 조회 -->
-<div class="source-label src-sys" style="margin-top:28px">🏢 소스 ② 사내시스템 조회 (중복 확인용 이력)</div>
-<table class="data-table"><thead><tr><th>필드</th><th>구분</th><th>원본 값</th><th>암호화 결과</th><th>일치 여부</th><th>상태</th></tr></thead>
-<tbody id="tb2"></tbody></table>
+      <div class="agent-banner">
+        <strong>Agent LLM 입력 원칙</strong><br>
+        처리계획 수립 단계에서 Agent LLM은 원문값이 아니라 <b>컬럼명, 데이터 타입, 데이터 출처, 업무 목적, 비교 필요성, 계산 필요성, 상태값 여부, 레시피 태그 계약</b>만 본다. 실제 원문값은 SCZ 내부에 남고, SCZ가 계획대로 Master Policy 처리한다.
+      </div>
 
-<!-- 소스 3: 정책 RAG -->
-<div class="source-label src-rag" style="margin-top:28px">📋 소스 ③ 정책 RAG 확인 데이터 (문서 발췌)</div>
-<table class="data-table"><thead><tr><th style="width:70%">정책 본문 (RAG 발췌 내역)</th><th>OCR 일치</th><th>상태</th></tr></thead>
-<tbody id="tb3"></tbody></table>
+      <div class="grid-2">
+        <div>
+          <div class="phase-title">① Agent LLM 처리계획</div>
+          <div class="code-box" id="planBox"><span class="c">세션을 생성하면 Agent LLM이 Master Policy Engine 스킬을 호출해 컬럼별 처리계획을 생성합니다.</span></div>
+        </div>
+        <div>
+          <div class="phase-title">② 선택적 sLM 2차 검증</div>
+          <div class="code-box" id="slmBox"><span class="c">sLM은 원문값이 아닌 태깅 계획·컬럼 메타데이터·Master Policy만 검증합니다.</span></div>
+        </div>
+      </div>
 
-<div class="log-area" id="logArea">
-<div><span class="log-time">[시스템]</span> 암호화 엔진 초기화 완료. 세션을 생성하세요.</div>
-</div>
-</div>
-</div>
+      <div class="source-label src-ocr">데이터셋1 : OCR 추출 데이터</div>
+      <div class="table-wrap"><table class="data-table"><thead><tr><th>컬럼</th><th>SCZ 내부 예시값</th><th>Agent 처리계획</th><th>SCZ Master Policy</th><th>Agent 사용 목적</th></tr></thead><tbody id="tb1"></tbody></table></div>
+
+      <div class="source-label src-sys">데이터셋2 : 사내 조회 데이터</div>
+      <div class="table-wrap"><table class="data-table"><thead><tr><th>컬럼</th><th>SCZ 내부 예시값</th><th>Agent 처리계획</th><th>SCZ Master Policy</th><th>Agent 사용 목적</th></tr></thead><tbody id="tb2"></tbody></table></div>
+
+      <div class="source-label src-rag">데이터셋3 : 사내 정책 데이터</div>
+      <div class="table-wrap"><table class="data-table"><thead><tr><th>컬럼</th><th>SCZ 내부 예시값</th><th>Agent 처리계획</th><th>SCZ Master Policy</th><th>Agent 사용 목적</th></tr></thead><tbody id="tb3"></tbody></table></div>
+
+      <div class="phase-title">③ Agent LLM 3개 데이터셋 비교 검증</div>
+      <div class="grid-3" id="verifyGrid">
+        <div class="verify-card"><h4>암호화 태그 비교</h4><p>세션을 생성하면 동일성 비교 결과가 표시됩니다.</p></div>
+        <div class="verify-card"><h4>패스스루 값 판단</h4><p>신청금액·진료일·기존금액·정책버전을 계산과 기간 판단에 사용합니다.</p></div>
+        <div class="verify-card"><h4>범주화 태그 판단</h4><p>수진자관계·기관검증상태·지원조건이 회사 복지제도와 부합하는지 판단합니다.</p></div>
+      </div>
+
+      <div class="phase-title">④ 최종 Agent 판단 Payload</div>
+      <div class="code-box" id="payloadBox"><span class="c">Master Policy 생성 후 Agent LLM에 전달되는 payload가 표시됩니다. 원문·복호화 키·매핑 테이블은 포함되지 않습니다.</span></div>
+
+      <div class="log-area" id="logArea">
+        <div><span class="log-time">[시스템]</span> Master Policy 엔진 초기화 완료. 의료비 Master Policy 생성을 시작하세요.</div>
+      </div>
+    </div>
+  </div>
 </main>
 
 <script>
 let session=null;
 function ts(){return new Date().toLocaleTimeString('ko-KR',{hour12:false})}
 function log(msg,cls='log-info'){
-const el=document.getElementById('logArea');
-el.innerHTML+=`<div><span class="log-time">[${ts()}]</span> <span class="${cls}">${msg}</span></div>`;
-el.scrollTop=el.scrollHeight;
+  const el=document.getElementById('logArea');
+  el.innerHTML+=`<div><span class="log-time">[${ts()}]</span> <span class="${cls}">${msg}</span></div>`;
+  el.scrollTop=el.scrollHeight;
 }
 function randHex(n){let s='';for(let i=0;i<n;i++)s+='0123456789abcdef'[Math.random()*16|0];return s}
-
-// 결정적 해시: 같은 seed+text → 같은 암호문 (충돌 방지 강화)
-function deterministicEnc(seed,text){
-const input=seed+'::'+text;
-// FNV-1a inspired multi-round hash
-let h1=0x811c9dc5, h2=0xc6a4a793;
-for(let i=0;i<input.length;i++){
-const ch=input.charCodeAt(i);
-h1=Math.imul(h1^ch,0x01000193);
-h2=Math.imul(h2^(ch*(i+1)),0x5bd1e995);
+function deterministicToken(seed,type,text){
+  const input=seed+'::'+type+'::'+text;
+  let h1=0x811c9dc5, h2=0xc6a4a793;
+  for(let i=0;i<input.length;i++){
+    const ch=input.charCodeAt(i);
+    h1=Math.imul(h1^ch,0x01000193)>>>0;
+    h2=Math.imul(h2^(ch*(i+1)),0x5bd1e995)>>>0;
+  }
+  const hex=(h1.toString(16).padStart(8,'0')+h2.toString(16).padStart(8,'0')).toUpperCase();
+  return `ENC_${type}_${hex.slice(0,10)}`;
 }
-const c='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-let r='';
-let s1=Math.abs(h1), s2=Math.abs(h2);
-for(let i=0;i<28;i++){
-s1=(Math.imul(s1,1103515245)+12345)>>>0;
-s2=(Math.imul(s2,1664525)+1013904223)>>>0;
-r+=c[((s1^s2)>>>0)%64];
+function planBadge(plan){
+  if(plan==='encrypted_tags')return '<span class="status-badge status-encrypted">암호화</span>';
+  if(plan==='pass_through')return '<span class="status-badge status-pass">패스스루</span>';
+  if(plan==='category_tags')return '<span class="status-badge status-category">범주화</span>';
+  if(plan==='blocked_raw')return '<span class="status-badge status-block">차단</span>';
+  if(plan==='encrypt_or_block')return '<span class="status-badge status-block">암호화/차단</span>';
+  return '<span class="status-badge status-plan">계획</span>';
 }
-return r+'==';
+function protectItem(seed,item){
+  if(item.plan==='encrypted_tags'||item.plan==='encrypt_or_block'){
+    const token=deterministicToken(seed,item.tokenType,item.value);
+    return {display:`<span class="protected-value">${token}</span>`,token,raw:`<span class="raw-value">${item.value}</span>`};
+  }
+  if(item.plan==='pass_through')return {display:`<span class="pass-value">${item.output||item.value}</span>`,token:null,raw:`<span class="plain-value">${item.value}</span>`};
+  if(item.plan==='category_tags')return {display:`<span class="cat-value">${item.output||item.value}</span>`,token:null,raw:`<span class="plain-value">${item.value}</span>`};
+  return {display:`<span class="blocked-value">[Agent 전달 안 함]</span>`,token:null,raw:`<span class="raw-value">${item.value}</span>`};
 }
-
-// 데이터 정의
-const OCR=[
-{f:'이름',v:'홍길동',sens:true},
-{f:'주민등록번호',v:'900101-1234567',sens:true},
-{f:'진단명',v:'급성 편도염',sens:true},
-{f:'병원',v:'서울강남 좋은이비인후과',sens:true},
-{f:'청구금액',v:'48,500원',sens:false},
-{f:'비급여금액',v:'0원',sens:false},
-{f:'신청일',v:'2026-04-07',sens:false}
+const DS1=[
+  {col:'주민번호',value:'900101-1234567',plan:'encrypt_or_block',tokenType:'RRN',purpose:'고위험 개인정보. Agent 판단에는 불필요'},
+  {col:'신청자명',value:'홍길동',plan:'encrypted_tags',tokenType:'PERSON',purpose:'사내 조회 데이터와 동일 신청자인지 비교'},
+  {col:'진단명',value:'급성 편도염',plan:'encrypted_tags',tokenType:'DX',purpose:'동일 진단명 여부 비교. 의미 해석 안 함'},
+  {col:'진단군',value:'상기도감염',plan:'encrypted_tags',tokenType:'DXCAT',purpose:'사내이력·정책진단군과 동일성 비교'},
+  {col:'병원명',value:'좋은이비인후과',plan:'encrypted_tags',tokenType:'INST',purpose:'사내 조회 병원과 동일성 비교'},
+  {col:'신청금액',value:'48,500',plan:'pass_through',purpose:'한도와 지급금액 계산'},
+  {col:'진료일',value:'2026-04-10',plan:'pass_through',purpose:'중복 여부와 기간 판단'}
 ];
-const SYS=[
-{f:'이름',v:'홍길동',sens:true},         // 동일 → 암호문 일치
-{f:'주민등록번호',v:'900101-1234567',sens:true}, // 동일 → 암호문 일치
-{f:'진단명',v:'알레르기성 비염',sens:true},   // 다름 → 암호문 불일치
-{f:'병원',v:'분당 미래이비인후과',sens:true},  // 다름 → 암호문 불일치
-{f:'청구금액',v:'32,000원',sens:false},
-{f:'신청일',v:'2025-11-15',sens:false}
+const DS2=[
+  {col:'기존신청자',value:'홍길동',plan:'encrypted_tags',tokenType:'PERSON',purpose:'OCR 신청자와 동일성 비교'},
+  {col:'수진자관계',value:'배우자',plan:'category_tags',purpose:'가족 의료비 정책 적용 여부 판단'},
+  {col:'기관검증상태',value:'정상등록기관',plan:'category_tags',purpose:'병원 유효성 판단'},
+  {col:'기존진단군',value:'상기도감염',plan:'encrypted_tags',tokenType:'DXCAT',purpose:'OCR·정책 진단군과 동일성 비교'},
+  {col:'기존병원',value:'좋은이비인후과',plan:'encrypted_tags',tokenType:'INST',purpose:'OCR 병원과 동일성 비교'},
+  {col:'기존수진자관계',value:'본인',plan:'category_tags',purpose:'동일 진단군·동일일자라도 수진자 상이 여부 판단'},
+  {col:'기존진료일',value:'2026-04-10',plan:'pass_through',purpose:'중복 기준 비교'},
+  {col:'기존신청금액',value:'10,000',plan:'pass_through',purpose:'중복·한도 사용량 판단'}
 ];
-const RAG=[
-{f:'진단명',v:'급성 편도염',sens:true},  // OCR과 동일 → 암호문 일치
-{f:'지급 여부',v:'가능',sens:false},
-{f:'정책버전',v:'2026년 1월',sens:false}
+const DS3=[
+  {col:'지원조건',value:'가족 의료비 가능',plan:'category_tags',purpose:'수진자관계와 제도 부합성 판단'},
+  {col:'지원대상',value:'급여 외래',plan:'category_tags',purpose:'진료유형·급여성 조건 판단'},
+  {col:'정책진단군',value:'상기도감염',plan:'encrypted_tags',tokenType:'DXCAT',purpose:'OCR·이력 진단군과 동일성 비교'},
+  {col:'기관기준',value:'정상등록기관',plan:'category_tags',purpose:'기관검증상태와 정책 기준 비교'},
+  {col:'중복기준',value:'동일신청자+동일진단군+동일진료일',plan:'category_tags',purpose:'암호화 태그와 패스스루 값 비교 기준'},
+  {col:'정책버전',value:'2026.1',plan:'pass_through',purpose:'감사와 근거 추적'}
 ];
-
-function fillTable(tbId,data,seed,ocrMap,showMatch,srcLabel,delay0){
-const tb=document.getElementById(tbId);
-tb.innerHTML='';
-let d=delay0;
-data.forEach((item,i)=>{
-d+=350;
-setTimeout(()=>{
-const tr=document.createElement('tr');
-tr.style.animation='fadeIn .4s ease';
-const enc=item.sens?deterministicEnc(seed,item.v):null;
-const sensHtml=item.sens?'<span class="sens-badge sens-y">민감</span>':'<span class="sens-badge sens-n">비민감</span>';
-let matchHtml='';
-if(showMatch&&item.sens&&ocrMap){
-const ocrEnc=ocrMap[item.f];
-if(ocrEnc&&ocrEnc===enc){matchHtml='<td><span class="status-badge status-active">✓ 일치</span></td>';}
-else if(ocrEnc){matchHtml='<td><span class="status-badge status-inactive">✗ 불일치</span></td>';}
-else{matchHtml='<td style="color:#3a4a66">—</td>';}
-}else if(showMatch){matchHtml='<td style="color:#3a4a66">—</td>';}
-if(item.sens){
-tr.innerHTML=`<td>${item.f}</td><td>${sensHtml}</td><td style="color:#ff4757;text-decoration:line-through">${item.v}</td><td style="color:#7b61ff;font-size:11px">${enc}</td>${matchHtml}<td><span class="status-badge status-encrypted">암호화됨</span></td>`;
-log(`[${srcLabel}] ${item.f}: ${item.v} → ${enc.substring(0,20)}...`,'log-info');
-}else{
-tr.innerHTML=`<td>${item.f}</td><td>${sensHtml}</td><td>${item.v}</td><td style="color:#10b981">${item.v}</td>${matchHtml}<td><span class="status-badge status-pass">원본 전달</span></td>`;
-log(`[${srcLabel}] ${item.f}: ${item.v} (비민감)`,'log-success');
+function fillTable(tbId,data,seed,srcLabel,delay0){
+  const tb=document.getElementById(tbId); tb.innerHTML='';
+  let d=delay0;
+  data.forEach(item=>{
+    d+=170;
+    setTimeout(()=>{
+      const p=protectItem(seed,item);
+      const tr=document.createElement('tr'); tr.style.animation='fadeIn .35s ease';
+      tr.innerHTML=`<td>${item.col}</td><td>${p.raw}</td><td>${planBadge(item.plan)}</td><td>${p.display}</td><td>${item.purpose}</td>`;
+      tb.appendChild(tr);
+      log(`[${srcLabel}] ${item.col} → ${item.plan}`,(item.plan==='encrypted_tags'||item.plan==='encrypt_or_block')?'log-info':item.plan==='category_tags'?'log-warn':'log-success');
+    },d);
+  });
+  return d;
 }
-tb.appendChild(tr);
-},d);
-});
-return d;
+function buildPlanJSON(){
+  return `{
+  <span class="c">// Agent LLM이 Master Policy Engine 스킬 호출 후 생성한 컬럼별 처리계획</span>
+  <span class="k">"dataset1.주민번호"</span>: <span class="r">"encrypt_or_block"</span>,
+  <span class="k">"dataset1.신청자명"</span>: <span class="p">"encrypted_tags"</span>,
+  <span class="k">"dataset1.진단명"</span>: <span class="p">"encrypted_tags"</span>,
+  <span class="k">"dataset1.진단군"</span>: <span class="p">"encrypted_tags"</span>,
+  <span class="k">"dataset1.병원명"</span>: <span class="p">"encrypted_tags"</span>,
+  <span class="k">"dataset1.신청금액"</span>: <span class="v">"pass_through"</span>,
+  <span class="k">"dataset1.진료일"</span>: <span class="v">"pass_through"</span>,
+
+  <span class="k">"dataset2.수진자관계"</span>: <span class="w">"category_tags"</span>,
+  <span class="k">"dataset2.기관검증상태"</span>: <span class="w">"category_tags"</span>,
+  <span class="k">"dataset2.기존진단군"</span>: <span class="p">"encrypted_tags"</span>,
+  <span class="k">"dataset2.기존병원"</span>: <span class="p">"encrypted_tags"</span>,
+  <span class="k">"dataset2.기존진료일"</span>: <span class="v">"pass_through"</span>,
+
+  <span class="k">"dataset3.정책진단군"</span>: <span class="p">"encrypted_tags"</span>,
+  <span class="k">"dataset3.지원조건"</span>: <span class="w">"category_tags"</span>,
+  <span class="k">"dataset3.기관기준"</span>: <span class="w">"category_tags"</span>,
+  <span class="k">"dataset3.중복기준"</span>: <span class="w">"category_tags"</span>
+}`;
 }
+function buildSlmText(){
+  return `<span class="c">// 선택적 sLM 2차 검증 — 원문값 없음</span>
+검증 입력: 컬럼명, 데이터 타입, 데이터 출처, 태깅 계획, Master Policy
 
-function fillRagText(seed,ocrMap,delay0){
-const tb=document.getElementById('tb3');
-tb.innerHTML='';
-const diag="급성 편도염";
-const enc=deterministicEnc(seed,diag);
-const ocrEnc=ocrMap?ocrMap['진단명']:null;
-const isMatch=(ocrEnc===enc);
+✓ 진단명·진단군은 건강정보 + 동일성 비교 필요 → 암호화 적합
+✓ 신청금액·진료일은 계산·기간 판단 필요 → 패스스루 적합
+✓ 수진자관계·기관검증상태·지원조건은 업무 상태값 → 범주화 적합
+✓ 정책진단군 누락 없음
+✓ 원문값·복호화 키·매핑 테이블은 sLM에 미제공
 
-let d=delay0+350;
-setTimeout(()=>{
-const tr=document.createElement('tr');
-tr.style.animation='fadeIn .4s ease';
-const richText=`사내 복지규정 제12조(의료비 지원) 조항에 따르면, 내과 진료 항목 중 <span style="color:#ff4757;text-decoration:line-through;font-weight:bold">${diag}</span>(<span class="enc-part" style="color:#7b61ff;font-size:11px">${enc}</span>) 질병에 대한 급여성 본인부담 비용은 구성원 건강 보건 및 복지 증진을 위해 회사가 100% 지급하는 것을 원칙으로 한다. 본 지원금은 사내 복지 기금 운용 지침에 의거하여 정산된다. <br><small style="color:#7b8faa">출처: 사내 복지-의료비 가이드 (2026년 1월 개정)</small>`;
-const matchHtml=isMatch?'<td><span class="status-badge status-active">✓ 일치</span></td>':'<td><span class="status-badge status-inactive">✗ 불일치</span></td>';
-tr.innerHTML=`<td style="line-height:1.6;color:#a0b4cc">${richText}</td>${matchHtml}<td><span class="status-badge status-encrypted">암호화됨</span></td>`;
-tb.appendChild(tr);
-log(`[정책RAG] 상세 정책 문서 발췌 및 진단명 암호화 완료`,'log-success');
-},d);
-return d;
+결과: <span class="v">태깅 계획 승인</span>`;
 }
-
+function esc(s){return String(s).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));}
+function collectPayload(seed){
+  const token=(type,value)=>deterministicToken(seed,type,value);
+  return {
+    encrypted_tags:{
+      신청자토큰:token('PERSON','홍길동'),
+      진단명토큰:token('DX','급성 편도염'),
+      진단군토큰:token('DXCAT','상기도감염'),
+      병원토큰:token('INST','좋은이비인후과'),
+      정책진단군토큰:token('DXCAT','상기도감염')
+    },
+    pass_through:{
+      신청금액:48500,
+      진료일:'2026-04-10',
+      기존신청금액:10000,
+      기존진료일:'2026-04-10',
+      정책버전:'2026.1'
+    },
+    category_tags:{
+      수진자관계:'배우자',
+      기존수진자관계:'본인',
+      기관검증상태:'정상등록기관',
+      지원조건:'가족 의료비 가능',
+      지원대상:'급여 외래',
+      중복기준:'동일신청자+동일진단군+동일진료일'
+    },
+    blocked_raw:['주민번호 원문','신청자명 원문','진단명 원문','진단군 원문','병원명 원문','복호화 키','원문-암호문 매핑 테이블']
+  };
+}
+function prettyPayload(payload){
+  const json=JSON.stringify(payload,null,2);
+  return esc(json)
+    .replace(/"encrypted_tags"/g,'<span class="p">"encrypted_tags"</span>')
+    .replace(/"pass_through"/g,'<span class="v">"pass_through"</span>')
+    .replace(/"category_tags"/g,'<span class="w">"category_tags"</span>')
+    .replace(/"blocked_raw"/g,'<span class="r">"blocked_raw"</span>');
+}
+function renderVerify(seed){
+  const person1=deterministicToken(seed,'PERSON','홍길동');
+  const person2=deterministicToken(seed,'PERSON','홍길동');
+  const dxcat1=deterministicToken(seed,'DXCAT','상기도감염');
+  const dxcat2=deterministicToken(seed,'DXCAT','상기도감염');
+  const dxcat3=deterministicToken(seed,'DXCAT','상기도감염');
+  const inst1=deterministicToken(seed,'INST','좋은이비인후과');
+  const inst2=deterministicToken(seed,'INST','좋은이비인후과');
+  document.getElementById('verifyGrid').innerHTML=`
+    <div class="verify-card"><h4>암호화 태그 비교</h4>
+      <p>신청자토큰: ${person1===person2?'동일':'상이'}<br>진단군토큰: ${dxcat1===dxcat2&&dxcat2===dxcat3?'3개 데이터셋 동일':'상이'}<br>병원토큰: ${inst1===inst2?'OCR ↔ 사내조회 동일':'상이'}</p>
+      <div class="verify-result vr-ok">동일성 비교 완료 · 의미 해석 없음</div>
+    </div>
+    <div class="verify-card"><h4>패스스루 값 판단</h4>
+      <p>신청금액 48,500원<br>진료일 2026-04-10<br>기존신청금액 10,000원<br>기존진료일 2026-04-10</p>
+      <div class="verify-result vr-info">금액·날짜는 계산과 기간 판단에 사용</div>
+    </div>
+    <div class="verify-card"><h4>범주화 태그 판단</h4>
+      <p>수진자관계: 배우자<br>기존수진자관계: 본인<br>기관검증상태: 정상등록기관<br>지원조건: 가족 의료비 가능</p>
+      <div class="verify-result vr-warn">동일 진단군·동일일자이나 수진자관계 상이 → 중복 단정 안 함</div>
+    </div>`;
+}
 function startSession(){
-const sid='SES-'+randHex(8).toUpperCase();
-const today=new Date();
-const seed=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
-const key=randHex(64);
-session={sid,seed,key};
-
-document.getElementById('sessionInfo').style.display='flex';
-document.getElementById('sid').textContent=sid;
-document.getElementById('seedVal').textContent=seed;
-document.getElementById('encKey').textContent='AES256(seed='+seed+') '+key.substring(0,12)+'...';
-document.getElementById('statusBadge').textContent='ACTIVE';
-document.getElementById('statusBadge').className='status-badge status-active';
-document.getElementById('btnStart').disabled=true;
-document.getElementById('btnEnd').disabled=false;
-
-log(`세션 생성: ${sid}`,'log-success');
-log(`Seed (생성날짜): ${seed}`,'log-warn');
-log(`AES-256 키 = PBKDF2(seed=${seed}) → ${key.substring(0,24)}...`,'log-info');
-
-// OCR 암호문 맵 (비교용)
-const ocrMap={};
-OCR.forEach(item=>{if(item.sens)ocrMap[item.f]=deterministicEnc(seed,item.v);});
-
-let d1=fillTable('tb1',OCR,seed,null,false,'OCR증빙',0);
-let d2=fillTable('tb2',SYS,seed,ocrMap,true,'사내시스템',d1+200);
-let d3=fillRagText(seed,ocrMap,d1+d2+200);
-
-setTimeout(()=>{
-log('─── 암호문 비교 결과 ───','log-warn');
-log('이름: OCR ↔ 사내시스템 → ✓ 일치 (동일인 확인)','log-success');
-log('주민등록번호: OCR ↔ 사내시스템 → ✓ 일치 (동일인 확인)','log-success');
-log('진단명: OCR ↔ 사내시스템 → ✗ 불일치 (중복 청구 아님)','log-error');
-log('병원: OCR ↔ 사내시스템 → ✗ 불일치 (다른 병원)','log-error');
-log('진단명: OCR ↔ 정책RAG → ✓ 일치 (정책 적용 가능)','log-success');
-log('✅ Agent 판단: 동일인·비중복·정책적용가능 → 지급 승인 추천','log-success');
-},d1+d2+d3+800);
+  const sid='SES-'+randHex(8).toUpperCase();
+  const today=new Date();
+  const seed=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+  const key=randHex(64); session={sid,seed,key};
+  document.getElementById('sessionInfo').style.display='flex';
+  document.getElementById('sid').textContent=sid;
+  document.getElementById('seedVal').textContent=seed;
+  document.getElementById('encKey').textContent='SESSION_KEY '+key.substring(0,12)+'...';
+  document.getElementById('statusBadge').textContent='ACTIVE';
+  document.getElementById('statusBadge').className='status-badge status-active';
+  document.getElementById('btnStart').disabled=true; document.getElementById('btnEnd').disabled=false;
+  document.getElementById('tb1').innerHTML='';document.getElementById('tb2').innerHTML='';document.getElementById('tb3').innerHTML='';
+  document.getElementById('planBox').innerHTML=buildPlanJSON();
+  document.getElementById('slmBox').innerHTML=buildSlmText();
+  log(`SCZ 세션 생성: ${sid}`,'log-success');
+  log('SCZ가 OCR 추출 데이터, 사내 조회 데이터, 사내 정책 데이터 3개 데이터셋 생성','log-info');
+  log('Agent LLM이 원문값 없이 컬럼 정보 + 레시피 설명서로 처리계획 생성','log-warn');
+  log('선택적 sLM 2차 검증: 태깅 계획·컬럼 메타데이터만 검증','log-warn');
+  log('SCZ가 처리계획에 따라 실제 데이터값 Master Policy 처리 시작','log-info');
+  let d1=fillTable('tb1',DS1,seed,'데이터셋1 OCR',0);
+  let d2=fillTable('tb2',DS2,seed,'데이터셋2 사내조회',d1+100);
+  let d3=fillTable('tb3',DS3,seed,'데이터셋3 정책',d2+100);
+  setTimeout(()=>{
+    const payload=collectPayload(seed);
+    renderVerify(seed);
+    document.getElementById('payloadBox').innerHTML=prettyPayload(payload)+`\n\n<span class="c">// Agent 판단</span>\n동일 신청자 + 동일 진단군 + 동일 진료일 확인\n단, 수진자관계가 현재 배우자 / 기존 본인으로 상이\n기관검증상태 정상등록기관, 지원조건 가족의료비 가능\n신청금액 48,500원은 한도 내\n\n<span class="v">결과: 지급 가능 또는 추가확인 없이 승인 가능</span>`;
+    log('Agent LLM: 암호화 태그로 3개 데이터셋 동일성 비교 완료','log-success');
+    log('Agent LLM: 패스스루 값과 범주화 태그로 회사 복지제도 부합성 판단','log-success');
+    log('✅ 최종 판단: 지급 가능','log-success');
+  },d3+650);
 }
-
 function endSession(){
-if(!session)return;
-log(`세션 종료 요청: ${session.sid}`,'log-warn');
-['tb1','tb2','tb3'].forEach(id=>{
-const rows=document.getElementById(id).querySelectorAll('tr');
-rows.forEach(r=>{
-const cells=r.querySelectorAll('td');
-if(id==='tb3'){
-r.style.opacity='0.3';
-const encPart=r.querySelector('.enc-part');
-if(encPart)encPart.textContent='[삭제됨]';
-if(encPart)encPart.style.color='#ff4757';
-cells[2].innerHTML='<span class="status-badge status-inactive">삭제</span>';
-}else{
-const hasSens=r.querySelector('.sens-y');
-if(hasSens){
-r.style.opacity='0.3';
-cells[3].textContent='[삭제됨]';
-cells[3].style.color='#ff4757';
-cells[4].innerHTML='<span class="status-badge status-inactive">삭제</span>';
-}
-}
-});
-});
-setTimeout(()=>{
-log(`🔑 Seed(${session.seed}) 기반 암호화 키 파기`,'log-error');
-log(`🗑️ 세션 ${session.sid} 완전 종료. 모든 암호문 삭제.`,'log-warn');
-document.getElementById('statusBadge').textContent='TERMINATED';
-document.getElementById('statusBadge').className='status-badge status-inactive';
-document.getElementById('encKey').textContent='[파기됨]';
-document.getElementById('encKey').style.color='#ff4757';
-document.getElementById('seedVal').textContent='[파기됨]';
-document.getElementById('seedVal').style.color='#ff4757';
-session=null;
-document.getElementById('btnStart').disabled=false;
-document.getElementById('btnEnd').disabled=true;
-},800);
+  if(!session)return;
+  log(`세션 종료 요청: ${session.sid}`,'log-warn');
+  ['tb1','tb2','tb3'].forEach(id=>{
+    const rows=document.getElementById(id).querySelectorAll('tr');
+    rows.forEach(r=>{
+      const cells=r.querySelectorAll('td');
+      if(cells[3] && cells[3].querySelector('.protected-value')){
+        cells[3].innerHTML='<span class="blocked-value">[삭제됨]</span>';
+        r.style.opacity='0.45';
+      }
+    });
+  });
+  setTimeout(()=>{
+    log(`🔑 세션 키 파기: ${session.key.substring(0,10)}...`,'log-error');
+    log(`🗑️ 세션 ${session.sid} 종료. Master Policy 임시값 삭제.`,'log-warn');
+    document.getElementById('statusBadge').textContent='TERMINATED';
+    document.getElementById('statusBadge').className='status-badge status-inactive';
+    document.getElementById('encKey').textContent='[파기됨]';
+    document.getElementById('encKey').style.color='#ff7784';
+    session=null; document.getElementById('btnStart').disabled=false; document.getElementById('btnEnd').disabled=true;
+  },600);
 }
 </script>
-<style>
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.source-label{font-size:15px;font-weight:700;margin-top:24px;margin-bottom:8px;padding:8px 16px;border-radius:8px;display:inline-block}
-.src-ocr{background:#00f3ff15;color:#00f3ff;border:1px solid #00f3ff33}
-.src-sys{background:#f59e0b15;color:#f59e0b;border:1px solid #f59e0b33}
-.src-rag{background:#7b61ff15;color:#7b61ff;border:1px solid #7b61ff33}
-</style>
 </body>
 </html>
