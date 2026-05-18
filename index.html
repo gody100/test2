@@ -40,26 +40,26 @@ main{max-width:1240px;margin:0 auto;padding:40px 24px}.section-title{font-size:2
 
 <main>
   <div class="principle-box">
-    <h3>🔐 Master Policy 엔진 설계 — Agent 계획, SCZ 실행</h3>
+    <h3>🔐 Master Policy 엔진 설계 — Agent 계획, ZEZ 실행</h3>
     <p><strong>Agent LLM은 원문 데이터값을 보지 않고, 컬럼 정보와 레시피·스킬 설명서를 바탕으로 암호화·범주화·패스스루 처리계획을 생성한다.</strong><br>
-    SCZ는 OCR 추출 데이터, 사내 조회 데이터, 사내 정책 데이터의 3개 데이터셋을 만들고, Agent가 생성한 처리계획에 따라 실제 원문값을 암호화·범주화·패스스루·차단 처리한다.<br>
+    ZEZ(Zero Exposure Zone)는 OCR 추출 데이터, 사내 조회 데이터, 사내 정책 데이터의 3개 데이터셋을 만들고, Agent가 생성한 처리계획에 따라 실제 원문값을 암호화·범주화·패스스루·차단 처리한다.<br>
     <strong>암호화 태그는 의미 해석용이 아니라 3개 데이터셋 간 동일성 비교용</strong>이며, Agent LLM에는 원문, 복호화 키, 원문-암호문 매핑 테이블이 전달되지 않는다.</p>
-    <div class="warning-note">화면의 원문 예시는 설명을 위한 SCZ 내부 예시입니다. 실제 Agent LLM은 컬럼명·데이터 타입·출처·업무 목적·레시피 태그 계약과 Master Policy 데이터만 수신합니다.</div>
+    <div class="warning-note">화면의 원문 예시는 설명을 위한 ZEZ 내부 예시입니다. 실제 Agent LLM은 컬럼명·데이터 타입·출처·업무 목적·레시피 태그 계약과 Master Policy 데이터만 수신합니다.</div>
   </div>
 
   <div class="section-title">Master Policy 처리 파이프라인</div>
-  <div class="subtitle">사람이 데이터값마다 지정하지 않고, 레시피 태그 계약과 컬럼 메타데이터를 기반으로 Agent가 처리계획을 만들고 SCZ가 실제 처리한다.</div>
+  <div class="subtitle">사람이 데이터값마다 지정하지 않고, 레시피 태그 계약과 컬럼 메타데이터를 기반으로 Agent가 처리계획을 만들고 ZEZ가 실제 처리한다.</div>
 
   <div class="ratio-bar">
     <div class="r1">컬럼 메타데이터</div>
     <div class="r2">Agent 처리계획</div>
-    <div class="r3">SCZ Master Policy 처리</div>
+    <div class="r3">ZEZ Master Policy 처리</div>
     <div class="r4">sLM 2차검증</div>
   </div>
   <div class="ratio-legend">
     <span class="leg1">데이터셋 컬럼명·타입·출처·업무 목적</span>
     <span class="leg2">Agent LLM + Master Policy Engine 스킬로 컬럼별 계획 생성</span>
-    <span class="leg3">SCZ가 실제 원문값에 암호화·범주화·패스스루·차단 실행</span>
+    <span class="leg3">ZEZ가 실제 원문값에 암호화·범주화·패스스루·차단 실행</span>
     <span class="leg4">선택적 sLM은 원문이 아닌 계획·Master Policy을 검증</span>
   </div>
 
@@ -67,9 +67,9 @@ main{max-width:1240px;margin:0 auto;padding:40px 24px}.section-title{font-size:2
     <div class="step-card">
       <span class="step-badge b1">STEP 1</span>
       <div class="step-icon">📦</div>
-      <h4>SCZ 데이터셋 생성</h4>
-      <p>OCR 추출 데이터, 사내 조회 데이터, 사내 정책 데이터의 3개 데이터셋을 SCZ 내부에서 생성한다.</p>
-      <div class="step-tag t1">원문은 SCZ 내부</div><span class="arrow">→</span>
+      <h4>ZEZ 데이터셋 생성</h4>
+      <p>OCR 추출 데이터, 사내 조회 데이터, 사내 정책 데이터의 3개 데이터셋을 ZEZ 내부에서 생성한다.</p>
+      <div class="step-tag t1">원문은 ZEZ 내부</div><span class="arrow">→</span>
     </div>
     <div class="step-card">
       <span class="step-badge b2">STEP 2</span>
@@ -81,9 +81,9 @@ main{max-width:1240px;margin:0 auto;padding:40px 24px}.section-title{font-size:2
     <div class="step-card">
       <span class="step-badge b3">STEP 3</span>
       <div class="step-icon">🛡️</div>
-      <h4>SCZ Master Policy 처리</h4>
-      <p>SCZ가 계획에 따라 encrypted_tags, category_tags, pass_through, blocked_raw를 생성한다.</p>
-      <div class="step-tag t3">키·매핑 SCZ 격리</div><span class="arrow">→</span>
+      <h4>ZEZ Master Policy 처리</h4>
+      <p>ZEZ가 계획에 따라 encrypted_tags, category_tags, pass_through, blocked_raw를 생성한다.</p>
+      <div class="step-tag t3">키·매핑 ZEZ 격리</div><span class="arrow">→</span>
     </div>
     <div class="step-card">
       <span class="step-badge b4">OUTPUT</span>
@@ -101,14 +101,14 @@ main{max-width:1240px;margin:0 auto;padding:40px 24px}.section-title{font-size:2
       <span class="flow-arrow">→</span>
       <div class="flow-chip fc2">② Agent 처리계획<br><small>컬럼 기반 · 원문 없음</small></div>
       <span class="flow-arrow">→</span>
-      <div class="flow-chip fc3">③ SCZ Master Policy 처리<br><small>암호화 · 범주화 · 패스스루</small></div>
+      <div class="flow-chip fc3">③ ZEZ Master Policy 처리<br><small>암호화 · 범주화 · 패스스루</small></div>
       <span class="flow-arrow">→</span>
       <div class="flow-chip fc4">④ Agent 최종판단<br><small>동일성 비교 + 제도 부합성</small></div>
     </div>
-    <div class="note">Agent LLM = 처리계획 수립 + 최종 판단 | Master Policy Engine 스킬 = 판단 기준 제공 | SCZ = 실제 원문 처리·암호화·키 관리</div>
+    <div class="note">Agent LLM = 처리계획 수립 + 최종 판단 | Master Policy Engine 스킬 = 판단 기준 제공 | ZEZ = 실제 원문 처리·암호화·키 관리</div>
     <div class="detail">
       사람은 데이터값을 하나씩 지정하지 않고 레시피·스킬 설명서에 태그 처리 원칙을 정의한다.<br>
-      Agent LLM은 컬럼 메타데이터와 태그 계약으로 처리계획을 만들며, SCZ는 그 계획에 따라 실제 데이터값을 변환한다.<br>
+      Agent LLM은 컬럼 메타데이터와 태그 계약으로 처리계획을 만들며, ZEZ는 그 계획에 따라 실제 데이터값을 변환한다.<br>
       선택적 sLM은 원문값이 아니라 태깅 계획·컬럼 메타데이터·Master Policy만 검증하여 누락·충돌·오분류 가능성을 잡는다.
     </div>
   </div>
@@ -125,7 +125,7 @@ main{max-width:1240px;margin:0 auto;padding:40px 24px}.section-title{font-size:2
 
   <div class="demo-section">
     <div class="section-title">의료비 Master Policy 라이브 데모</div>
-    <div class="subtitle">버튼을 누르면 SCZ가 3개 데이터셋을 만들고, Agent LLM이 컬럼 기반 처리계획을 생성한 뒤, SCZ가 Master Policy을 생성하는 흐름을 확인할 수 있습니다.</div>
+    <div class="subtitle">버튼을 누르면 ZEZ가 3개 데이터셋을 만들고, Agent LLM이 컬럼 기반 처리계획을 생성한 뒤, ZEZ가 Master Policy을 생성하는 흐름을 확인할 수 있습니다.</div>
 
     <div class="demo-panel">
       <div class="demo-controls">
@@ -142,7 +142,7 @@ main{max-width:1240px;margin:0 auto;padding:40px 24px}.section-title{font-size:2
 
       <div class="agent-banner">
         <strong>Agent LLM 입력 원칙</strong><br>
-        처리계획 수립 단계에서 Agent LLM은 원문값이 아니라 <b>컬럼명, 데이터 타입, 데이터 출처, 업무 목적, 비교 필요성, 계산 필요성, 상태값 여부, 레시피 태그 계약</b>만 본다. 실제 원문값은 SCZ 내부에 남고, SCZ가 계획대로 Master Policy 처리한다.
+        처리계획 수립 단계에서 Agent LLM은 원문값이 아니라 <b>컬럼명, 데이터 타입, 데이터 출처, 업무 목적, 비교 필요성, 계산 필요성, 상태값 여부, 레시피 태그 계약</b>만 본다. 실제 원문값은 ZEZ 내부에 남고, ZEZ가 계획대로 Master Policy 처리한다.
       </div>
 
       <div class="grid-2">
@@ -157,13 +157,13 @@ main{max-width:1240px;margin:0 auto;padding:40px 24px}.section-title{font-size:2
       </div>
 
       <div class="source-label src-ocr">데이터셋1 : OCR 추출 데이터</div>
-      <div class="table-wrap"><table class="data-table"><thead><tr><th>컬럼</th><th>SCZ 내부 예시값</th><th>Agent 처리계획</th><th>SCZ Master Policy</th><th>Agent 사용 목적</th></tr></thead><tbody id="tb1"></tbody></table></div>
+      <div class="table-wrap"><table class="data-table"><thead><tr><th>컬럼</th><th>ZEZ 내부 예시값</th><th>Agent 처리계획</th><th>ZEZ Master Policy</th><th>Agent 사용 목적</th></tr></thead><tbody id="tb1"></tbody></table></div>
 
       <div class="source-label src-sys">데이터셋2 : 사내 조회 데이터</div>
-      <div class="table-wrap"><table class="data-table"><thead><tr><th>컬럼</th><th>SCZ 내부 예시값</th><th>Agent 처리계획</th><th>SCZ Master Policy</th><th>Agent 사용 목적</th></tr></thead><tbody id="tb2"></tbody></table></div>
+      <div class="table-wrap"><table class="data-table"><thead><tr><th>컬럼</th><th>ZEZ 내부 예시값</th><th>Agent 처리계획</th><th>ZEZ Master Policy</th><th>Agent 사용 목적</th></tr></thead><tbody id="tb2"></tbody></table></div>
 
       <div class="source-label src-rag">데이터셋3 : 사내 정책 데이터</div>
-      <div class="table-wrap"><table class="data-table"><thead><tr><th>컬럼</th><th>SCZ 내부 예시값</th><th>Agent 처리계획</th><th>SCZ Master Policy</th><th>Agent 사용 목적</th></tr></thead><tbody id="tb3"></tbody></table></div>
+      <div class="table-wrap"><table class="data-table"><thead><tr><th>컬럼</th><th>ZEZ 내부 예시값</th><th>Agent 처리계획</th><th>ZEZ Master Policy</th><th>Agent 사용 목적</th></tr></thead><tbody id="tb3"></tbody></table></div>
 
       <div class="phase-title">③ Agent LLM 3개 데이터셋 비교 검증</div>
       <div class="grid-3" id="verifyGrid">
@@ -370,11 +370,11 @@ function startSession(){
   document.getElementById('tb1').innerHTML='';document.getElementById('tb2').innerHTML='';document.getElementById('tb3').innerHTML='';
   document.getElementById('planBox').innerHTML=buildPlanJSON();
   document.getElementById('slmBox').innerHTML=buildSlmText();
-  log(`SCZ 세션 생성: ${sid}`,'log-success');
-  log('SCZ가 OCR 추출 데이터, 사내 조회 데이터, 사내 정책 데이터 3개 데이터셋 생성','log-info');
+  log(`ZEZ 세션 생성: ${sid}`,'log-success');
+  log('ZEZ가 OCR 추출 데이터, 사내 조회 데이터, 사내 정책 데이터 3개 데이터셋 생성','log-info');
   log('Agent LLM이 원문값 없이 컬럼 정보 + 레시피 설명서로 처리계획 생성','log-warn');
   log('선택적 sLM 2차 검증: 태깅 계획·컬럼 메타데이터만 검증','log-warn');
-  log('SCZ가 처리계획에 따라 실제 데이터값 Master Policy 처리 시작','log-info');
+  log('ZEZ가 처리계획에 따라 실제 데이터값 Master Policy 처리 시작','log-info');
   let d1=fillTable('tb1',DS1,seed,'데이터셋1 OCR',0);
   let d2=fillTable('tb2',DS2,seed,'데이터셋2 사내조회',d1+100);
   let d3=fillTable('tb3',DS3,seed,'데이터셋3 정책',d2+100);
