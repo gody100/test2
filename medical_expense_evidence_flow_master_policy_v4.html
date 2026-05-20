@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>의료비 증빙 처리 예시 플로우 — Master Policy Engine</title>
+<style>
+:root{
+  --bg:#07101d;
+  --panel:#0e1b2e;
+  --panel2:#10243d;
+  --line:#21466f;
+  --line2:#2d5f95;
+  --text:#e8f2ff;
+  --muted:#91a6c1;
+  --blue:#38bdf8;
+  --purple:#a78bfa;
+  --green:#34d399;
+  --yellow:#fbbf24;
+  --red:#fb7185;
+  --orange:#fb923c;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  font-family:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(circle at 30% 0%,rgba(56,189,248,.18),transparent 32%),
+    radial-gradient(circle at 80% 15%,rgba(167,139,250,.14),transparent 32%),
+    linear-gradient(180deg,#07101d,#030711 70%);
+}
+header{
+  position:sticky;
+  top:0;
+  z-index:20;
+  padding:18px 28px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  background:rgba(7,16,29,.9);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid rgba(56,189,248,.25);
+}
+h1{margin:0;font-size:22px;letter-spacing:-.02em}
+.subtitle{margin-top:4px;font-size:12px;color:var(--muted)}
+.nav{display:flex;gap:8px;flex-wrap:wrap}
+.nav a{
+  color:var(--muted);
+  text-decoration:none;
+  font-size:12px;
+  font-weight:800;
+  padding:7px 10px;
+  border:1px solid rgba(56,189,248,.25);
+  border-radius:999px;
+  background:rgba(14,27,46,.5);
+}
+.nav a:hover{color:var(--blue);border-color:var(--blue)}
+main{max-width:1220px;margin:0 auto;padding:26px 22px 60px}
+.hero{
+  border:1px solid rgba(56,189,248,.32);
+  background:linear-gradient(135deg,rgba(56,189,248,.1),rgba(167,139,250,.08));
+  border-radius:22px;
+  padding:24px 26px;
+  margin-bottom:24px;
+  box-shadow:0 20px 80px rgba(0,0,0,.24);
+}
+.hero h2{margin:0 0 12px;font-size:24px}
+.hero p{margin:0;color:#c9d9ee;line-height:1.75;font-size:14px}
+.hero strong{color:#fff}
+.hero-grid{
+  margin-top:18px;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+}
+.hero-chip{
+  border:1px solid rgba(255,255,255,.1);
+  background:rgba(3,7,17,.32);
+  border-radius:14px;
+  padding:12px 14px;
+}
+.hero-chip b{display:block;font-size:12px;margin-bottom:4px}
+.hero-chip span{font-size:11px;color:var(--muted);line-height:1.5}
+.section-title{
+  margin:34px 0 14px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:19px;
+  font-weight:900;
+}
+.section-title .num{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:30px;
+  height:30px;
+  border-radius:10px;
+  color:#02111d;
+  background:var(--blue);
+  font-size:14px;
+}
+.card{
+  border:1px solid rgba(56,189,248,.18);
+  background:rgba(14,27,46,.82);
+  border-radius:18px;
+  padding:18px;
+}
+.note{
+  margin-top:12px;
+  border-left:3px solid var(--blue);
+  padding:10px 12px;
+  border-radius:8px;
+  background:rgba(56,189,248,.07);
+  color:#cfe7ff;
+  font-size:13px;
+  line-height:1.65;
+}
+.warn{
+  border-left-color:var(--orange);
+  background:rgba(251,146,60,.08);
+}
+.flowline{
+  display:grid;
+  grid-template-columns:repeat(8,1fr);
+  gap:8px;
+  margin:18px 0 10px;
+}
+.flow-step{
+  min-height:108px;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:16px;
+  background:rgba(14,27,46,.82);
+  padding:12px 10px;
+  position:relative;
+}
+.flow-step::after{
+  content:"→";
+  position:absolute;
+  right:-13px;
+  top:44px;
+  color:rgba(145,166,193,.55);
+  font-weight:900;
+}
+.flow-step:last-child::after{content:""}
+.flow-step .small-num{
+  display:inline-block;
+  padding:2px 8px;
+  border-radius:999px;
+  background:rgba(56,189,248,.14);
+  color:var(--blue);
+  font-size:10px;
+  font-weight:900;
+  margin-bottom:7px;
+}
+.flow-step h3{font-size:12px;margin:0 0 6px;color:#fff}
+.flow-step p{font-size:10.5px;line-height:1.45;color:var(--muted);margin:0}
+.dataset-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+}
+.dataset{
+  border-radius:18px;
+  overflow:hidden;
+  border:1px solid rgba(56,189,248,.18);
+  background:rgba(8,18,31,.8);
+}
+.dataset .head{
+  padding:12px 14px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  background:rgba(56,189,248,.08);
+}
+.dataset .head b{font-size:13px}
+.dataset .head span{display:block;font-size:11px;color:var(--muted);margin-top:2px}
+.rows{padding:12px}
+.row{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  padding:8px 0;
+  border-bottom:1px dashed rgba(255,255,255,.08);
+  font-size:12px;
+}
+.row:last-child{border-bottom:none}
+.k{color:var(--muted)}
+.v{font-weight:700;text-align:right}
+.sensitive{color:var(--red)}
+.pass{color:var(--green)}
+.cat{color:var(--yellow)}
+.enc{color:var(--purple)}
+.block{color:var(--red)}
+.plan-grid{
+  display:grid;
+  grid-template-columns:1fr 1.15fr;
+  gap:14px;
+}
+.code{
+  background:#030711;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:14px;
+  padding:14px;
+  overflow:auto;
+  color:#bad1ee;
+  font-family:"SFMono-Regular","Consolas","Menlo",monospace;
+  font-size:12px;
+  line-height:1.75;
+  white-space:pre;
+}
+.code .b{color:var(--blue)}
+.code .p{color:var(--purple)}
+.code .g{color:var(--green)}
+.code .y{color:var(--yellow)}
+.code .r{color:var(--red)}
+.table-wrap{overflow:auto}
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:12px;
+}
+th,td{
+  text-align:left;
+  padding:10px 12px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  vertical-align:top;
+}
+th{
+  color:var(--blue);
+  background:rgba(56,189,248,.06);
+  font-weight:900;
+}
+.badge{
+  display:inline-block;
+  padding:3px 8px;
+  border-radius:999px;
+  font-size:10px;
+  font-weight:900;
+  white-space:nowrap;
+}
+.badge.enc{background:rgba(167,139,250,.14);color:var(--purple);border:1px solid rgba(167,139,250,.35)}
+.badge.pass{background:rgba(52,211,153,.14);color:var(--green);border:1px solid rgba(52,211,153,.35)}
+.badge.cat{background:rgba(251,191,36,.14);color:var(--yellow);border:1px solid rgba(251,191,36,.35)}
+.badge.block{background:rgba(251,113,133,.14);color:var(--red);border:1px solid rgba(251,113,133,.35)}
+.arrow-box{
+  text-align:center;
+  color:var(--muted);
+  font-weight:900;
+  margin:12px 0;
+}
+.transform-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+}
+.bucket{
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:16px;
+  padding:14px;
+  background:rgba(3,7,17,.28);
+}
+.bucket h4{margin:0 0 10px;font-size:13px}
+.bucket ul{margin:0;padding-left:18px}
+.bucket li{font-size:12px;line-height:1.65;color:#c9d9ee}
+.compare-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+.check{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  padding:12px;
+  border:1px solid rgba(52,211,153,.2);
+  background:rgba(52,211,153,.06);
+  border-radius:14px;
+  margin-bottom:10px;
+}
+.check .icon{color:var(--green);font-weight:900}
+.check b{display:block;font-size:12px;margin-bottom:3px}
+.check span{font-size:11.5px;color:var(--muted);line-height:1.55}
+.final{
+  border:1px solid rgba(52,211,153,.35);
+  background:linear-gradient(135deg,rgba(52,211,153,.12),rgba(56,189,248,.08));
+  border-radius:20px;
+  padding:22px;
+}
+.final h3{margin:0 0 10px;color:var(--green)}
+.final p{margin:0;color:#d9fbe9;line-height:1.75;font-size:14px}
+.footer{
+  margin-top:34px;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.7;
+}
+@media(max-width:980px){
+  .hero-grid,.dataset-grid,.transform-grid,.compare-grid,.plan-grid{grid-template-columns:1fr}
+  .flowline{grid-template-columns:repeat(2,1fr)}
+  .flow-step::after{display:none}
+}
+@media(max-width:560px){
+  header{position:static;align-items:flex-start;flex-direction:column}
+  .flowline{grid-template-columns:1fr}
+}
+@media print{
+  body{background:#fff;color:#111}
+  header,.nav{position:static;background:#fff;color:#111}
+  .card,.dataset,.bucket,.hero,.final{break-inside:avoid;background:#fff;color:#111;border-color:#bbb}
+  .code{background:#f7f7f7;color:#111}
+}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>의료비 증빙 처리 예시 플로우</h1>
+    <div class="subtitle">Agent LLM × ZEZ × Master Policy Engine</div>
+  </div>
+  <nav class="nav">
+    <a href="index.html" style="border-color: var(--purple); color: var(--purple);">← Master Policy 메인</a>
+    <a href="#step1">1 업로드</a>
+    <a href="#step2">2 데이터셋</a>
+    <a href="#step3">3 처리계획</a>
+    <a href="#step4">4 ZEZ 처리</a>
+    <a href="#step8">최종판단</a>
+  </nav>
+</header>
+
+<main>
+  <section class="hero">
+    <h2>핵심 메시지</h2>
+    <p>
+      의료비 증빙 사례에서 <strong>Agent LLM은 원문 민감정보를 보지 않습니다.</strong>
+      Agent LLM은 원문값이 아닌 <strong>컬럼 정보와 의료비 레시피 설명서</strong>를 바탕으로
+      “어떤 컬럼을 암호화·범주화·패스스루할지” 처리계획을 만들고,
+      <strong>ZEZ가 실제 원문 데이터에 대해 해당 처리를 수행</strong>합니다.
+      이후 Agent LLM은 암호화 태그로 3개 데이터셋 간 동일성만 비교하고,
+      패스스루 값과 범주화 태그를 회사 의료비 제도 조건과 비교하여 최종 지급 여부를 판단합니다.
+    </p>
+    <div class="hero-grid">
+      <div class="hero-chip"><b>Agent LLM 역할</b><span>컬럼 정보 + 레시피를 보고 처리계획 생성 및 최종 판단</span></div>
+      <div class="hero-chip"><b>ZEZ 역할</b><span>원문 보관, 실제 암호화·범주화·패스스루·차단 처리</span></div>
+      <div class="hero-chip"><b>암호화 태그</b><span>의미 해석이 아니라 동일성 비교 전용</span></div>
+      <div class="hero-chip"><b>범주화 태그</b><span>업무 판단에 필요한 안전한 상태값</span></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="section-title" style="margin-top:0"><span class="num">0</span>전체 흐름 한눈에 보기</div>
+    <div class="flowline">
+      <div class="flow-step"><span class="small-num">1</span><h3>영수증 업로드</h3><p>구성원이 의료비 증빙을 제출</p></div>
+      <div class="flow-step"><span class="small-num">2</span><h3>3개 데이터셋 생성</h3><p>OCR, 사내조회, 사내정책</p></div>
+      <div class="flow-step"><span class="small-num">3</span><h3>처리계획 생성</h3><p>Agent가 컬럼 정보 기반 계획 수립</p></div>
+      <div class="flow-step"><span class="small-num">4</span><h3>ZEZ 실제 처리</h3><p>암호화·범주화·패스스루·차단</p></div>
+      <div class="flow-step"><span class="small-num">5</span><h3>Agent 입력</h3><p>원문 없이 처리된 데이터만 전달</p></div>
+      <div class="flow-step"><span class="small-num">6</span><h3>동일성 비교</h3><p>암호화 태그로 3개 데이터셋 비교</p></div>
+      <div class="flow-step"><span class="small-num">7</span><h3>제도 조건 판단</h3><p>패스스루·범주화 태그로 판단</p></div>
+      <div class="flow-step"><span class="small-num">8</span><h3>최종 지급 판단</h3><p>지급 가능 / 반려 / 추가확인</p></div>
+    </div>
+  </section>
+
+  <section id="step1">
+    <div class="section-title"><span class="num">1</span>구성원이 의료비 영수증을 업로드한다</div>
+    <div class="card">
+      <p class="note" style="margin-top:0">
+        구성원이 의료비 신청 화면에서 영수증과 진단서 이미지를 업로드합니다.
+        원본 파일은 ZEZ 내부 안전구역으로 들어가며, Agent LLM은 아직 원본 파일이나 원문 데이터를 보지 않습니다.
+      </p>
+      <div class="dataset-grid" style="margin-top:14px">
+        <div class="dataset">
+          <div class="head"><b>업로드 자료</b><span>사용자 → ZEZ</span></div>
+          <div class="rows">
+            <div class="row"><span class="k">파일 1</span><span class="v">의료비 영수증</span></div>
+            <div class="row"><span class="k">파일 2</span><span class="v">진단서 또는 처방전</span></div>
+            <div class="row"><span class="k">요청 업무</span><span class="v">의료비 신청</span></div>
+          </div>
+        </div>
+        <div class="dataset">
+          <div class="head"><b>ZEZ 처리 원칙</b><span>원문 데이터 통제</span></div>
+          <div class="rows">
+            <div class="row"><span class="k">원문 파일</span><span class="v sensitive">ZEZ 내부 보관</span></div>
+            <div class="row"><span class="k">Agent 직접 접근</span><span class="v block">불가</span></div>
+            <div class="row"><span class="k">복호화 키</span><span class="v block">ZEZ 내부</span></div>
+          </div>
+        </div>
+        <div class="dataset">
+          <div class="head"><b>업무 트리거</b><span>레시피 시작</span></div>
+          <div class="rows">
+            <div class="row"><span class="k">트리거</span><span class="v">파일 업로드</span></div>
+            <div class="row"><span class="k">레시피</span><span class="v">medical_claim_recipe</span></div>
+            <div class="row"><span class="k">다음 단계</span><span class="v">ZEZ 데이터셋 생성</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="step2">
+    <div class="section-title"><span class="num">2</span>ZEZ가 3개 데이터셋을 만든다</div>
+    <div class="dataset-grid">
+      <div class="dataset">
+        <div class="head"><b>데이터셋 1: OCR 추출 데이터</b><span>영수증·진단서에서 추출</span></div>
+        <div class="rows">
+          <div class="row"><span class="k">신청자명</span><span class="v sensitive">홍길동</span></div>
+          <div class="row"><span class="k">주민번호</span><span class="v sensitive">900101-1234567</span></div>
+          <div class="row"><span class="k">진단명</span><span class="v sensitive">급성 편도염</span></div>
+          <div class="row"><span class="k">진단군</span><span class="v sensitive">상기도감염</span></div>
+          <div class="row"><span class="k">병원명</span><span class="v sensitive">좋은이비인후과</span></div>
+          <div class="row"><span class="k">신청금액</span><span class="v pass">48,500원</span></div>
+          <div class="row"><span class="k">진료일</span><span class="v pass">2026-04-10</span></div>
+        </div>
+      </div>
+      <div class="dataset">
+        <div class="head"><b>데이터셋 2: 사내 조회 데이터</b><span>HR·복지·병원 검증·이력</span></div>
+        <div class="rows">
+          <div class="row"><span class="k">구성원 인증</span><span class="v cat">정상</span></div>
+          <div class="row"><span class="k">수진자관계</span><span class="v cat">배우자</span></div>
+          <div class="row"><span class="k">기관검증상태</span><span class="v cat">정상등록기관</span></div>
+          <div class="row"><span class="k">기존 신청이력</span><span class="v pass">2026-04-10</span></div>
+          <div class="row"><span class="k">기존 진단군</span><span class="v sensitive">상기도감염</span></div>
+          <div class="row"><span class="k">기존 병원</span><span class="v sensitive">좋은이비인후과</span></div>
+          <div class="row"><span class="k">기존 신청금액</span><span class="v pass">10,000원</span></div>
+        </div>
+      </div>
+      <div class="dataset">
+        <div class="head"><b>데이터셋 3: 사내 정책 데이터</b><span>의료비 복지제도 정책</span></div>
+        <div class="rows">
+          <div class="row"><span class="k">지원조건</span><span class="v cat">가족 의료비 가능</span></div>
+          <div class="row"><span class="k">지원대상</span><span class="v cat">급여 외래</span></div>
+          <div class="row"><span class="k">정책진단군</span><span class="v sensitive">상기도감염</span></div>
+          <div class="row"><span class="k">기관기준</span><span class="v cat">정상등록기관</span></div>
+          <div class="row"><span class="k">중복기준</span><span class="v cat">동일 신청자 + 동일 진단군 + 동일 진료일</span></div>
+          <div class="row"><span class="k">정책버전</span><span class="v pass">2026.1</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="note">
+      위 표는 설명을 위해 원문 예시를 보여준 것입니다. 실제 시스템에서는 원문 데이터는 ZEZ 내부에만 있고,
+      Agent LLM은 원문값이 아니라 컬럼명·데이터 타입·출처·업무 목적 등의 메타데이터를 봅니다.
+    </div>
+  </section>
+
+  <section id="step3">
+    <div class="section-title"><span class="num">3</span>Agent LLM이 컬럼 정보와 의료비 레시피를 보고 처리계획을 만든다</div>
+    <div class="plan-grid">
+      <div class="card">
+        <h3 style="margin-top:0">Agent LLM이 보는 정보</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>구분</th><th>예시</th></tr></thead>
+            <tbody>
+              <tr><td>컬럼명</td><td>진단명, 진단군, 병원명, 신청금액, 진료일</td></tr>
+              <tr><td>데이터 타입</td><td>text, amount, date, status</td></tr>
+              <tr><td>데이터 출처</td><td>OCR, 사내조회, 사내정책</td></tr>
+              <tr><td>업무 목적</td><td>동일성 비교, 금액 계산, 정책 판단</td></tr>
+              <tr><td>의료비 레시피 원칙</td><td>민감정보+동일성 비교 → 암호화 / 계산 필요 → 패스스루 / 상태값 → 범주화</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="note warn">
+          Agent LLM이 보는 것은 원문값이 아닙니다. 즉, “급성 편도염”, “홍길동”, “좋은이비인후과” 자체를 보고 판단하지 않고,
+          컬럼 정보와 레시피 설명서를 기준으로 처리계획만 생성합니다.
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">Agent LLM이 생성하는 처리계획</h3>
+        <div class="code">{
+  <span class="b">"dataset1.주민번호"</span>: <span class="r">"encrypt_or_block"</span>,
+  <span class="b">"dataset1.신청자명"</span>: <span class="p">"encrypted_tags"</span>,
+  <span class="b">"dataset1.진단명"</span>: <span class="p">"encrypted_tags"</span>,
+  <span class="b">"dataset1.진단군"</span>: <span class="p">"encrypted_tags"</span>,
+  <span class="b">"dataset1.병원명"</span>: <span class="p">"encrypted_tags"</span>,
+  <span class="b">"dataset1.신청금액"</span>: <span class="g">"pass_through"</span>,
+  <span class="b">"dataset1.진료일"</span>: <span class="g">"pass_through"</span>,
+
+  <span class="b">"dataset2.수진자관계"</span>: <span class="y">"category_tags"</span>,
+  <span class="b">"dataset2.기관검증상태"</span>: <span class="y">"category_tags"</span>,
+  <span class="b">"dataset2.기존진단군"</span>: <span class="p">"encrypted_tags"</span>,
+  <span class="b">"dataset2.기존병원"</span>: <span class="p">"encrypted_tags"</span>,
+
+  <span class="b">"dataset3.정책진단군"</span>: <span class="p">"encrypted_tags"</span>,
+  <span class="b">"dataset3.지원조건"</span>: <span class="y">"category_tags"</span>,
+  <span class="b">"dataset3.중복기준"</span>: <span class="y">"category_tags"</span>
+}</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="step4">
+    <div class="section-title"><span class="num">4</span>ZEZ가 실제 데이터값을 처리한다</div>
+    <div class="transform-grid">
+      <div class="bucket">
+        <h4><span class="badge enc">암호화 태그</span></h4>
+        <ul>
+          <li>신청자명 → ENC_PERSON_A</li>
+          <li>진단명 → ENC_DX_A</li>
+          <li>진단군 → ENC_DXCAT_A</li>
+          <li>병원명 → ENC_INST_A</li>
+        </ul>
+      </div>
+      <div class="bucket">
+        <h4><span class="badge pass">패스스루</span></h4>
+        <ul>
+          <li>신청금액 → 48,500</li>
+          <li>진료일 → 2026-04-10</li>
+          <li>기존신청금액 → 10,000</li>
+          <li>기존진료일 → 2026-04-10</li>
+        </ul>
+      </div>
+      <div class="bucket">
+        <h4><span class="badge cat">범주화 태그</span></h4>
+        <ul>
+          <li>수진자관계 → 배우자</li>
+          <li>기관검증상태 → 정상등록기관</li>
+          <li>지원조건 → 가족의료비 가능</li>
+          <li>지원대상 → 급여 외래</li>
+        </ul>
+      </div>
+      <div class="bucket">
+        <h4><span class="badge block">차단</span></h4>
+        <ul>
+          <li>주민번호 원문</li>
+          <li>신청자명 원문</li>
+          <li>진단명 원문</li>
+          <li>병원명 원문</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note">
+      암호화 키, 원문-암호문 매핑, 원문 데이터는 ZEZ 내부에만 존재합니다.
+      Agent LLM은 암호화 태그의 의미를 복호화하거나 해석하지 못하고, 같은 값인지 비교하는 데만 사용합니다.
+    </div>
+  </section>
+
+  <section id="step5">
+    <div class="section-title"><span class="num">5</span>Agent LLM에는 처리된 데이터만 전달된다</div>
+    <div class="card">
+      <div class="code">{
+  <span class="p">"encrypted_tags"</span>: {
+    "신청자토큰": "ENC_PERSON_A",
+    "진단명토큰": "ENC_DX_A",
+    "진단군토큰": "ENC_DXCAT_A",
+    "병원토큰": "ENC_INST_A"
+  },
+  <span class="g">"pass_through"</span>: {
+    "신청금액": 48500,
+    "진료일": "2026-04-10",
+    "기존신청금액": 10000,
+    "기존진료일": "2026-04-10"
+  },
+  <span class="y">"category_tags"</span>: {
+    "수진자관계": "배우자",
+    "기관검증상태": "정상등록기관",
+    "지원조건": "가족의료비 가능",
+    "지원대상": "급여 외래",
+    "중복기준": "동일신청자+동일진단군+동일진료일"
+  }
+}</div>
+      <div class="note warn">
+        Agent LLM에는 홍길동, 주민번호, 급성 편도염, 상기도감염, 좋은이비인후과, 복호화 키, 원문-암호문 매핑 테이블이 전달되지 않습니다.
+      </div>
+    </div>
+  </section>
+
+  <section id="step6">
+    <div class="section-title"><span class="num">6</span>Agent LLM이 3개 데이터셋을 비교 검증한다</div>
+    <div class="compare-grid">
+      <div class="card">
+        <h3 style="margin-top:0">암호화 태그 비교</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>비교 항목</th><th>데이터셋 1</th><th>데이터셋 2</th><th>데이터셋 3</th><th>판단</th></tr></thead>
+            <tbody>
+              <tr><td>신청자</td><td>ENC_PERSON_A</td><td>ENC_PERSON_A</td><td>-</td><td class="pass">동일</td></tr>
+              <tr><td>진단군</td><td>ENC_DXCAT_A</td><td>ENC_DXCAT_A</td><td>ENC_DXCAT_A</td><td class="pass">동일</td></tr>
+              <tr><td>병원</td><td>ENC_INST_A</td><td>ENC_INST_A</td><td>-</td><td class="pass">동일</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="note">
+          여기서 Agent LLM은 ENC_DXCAT_A가 실제로 어떤 진단군인지 알지 못합니다. 단지 3개 데이터셋의 값이 같은지 비교합니다.
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">패스스루·범주화 값 검증</h3>
+        <div class="check"><div class="icon">✓</div><div><b>금액 판단</b><span>신청금액 48,500원이 잔여한도 이내인지 확인</span></div></div>
+        <div class="check"><div class="icon">✓</div><div><b>기간·중복 판단</b><span>진료일과 기존신청일, 기존신청금액을 비교</span></div></div>
+        <div class="check"><div class="icon">✓</div><div><b>관계 판단</b><span>수진자관계가 배우자이므로 가족 의료비 정책 적용 가능</span></div></div>
+        <div class="check"><div class="icon">✓</div><div><b>기관 판단</b><span>기관검증상태가 정상등록기관이므로 인정 기준 충족</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="step7">
+    <div class="section-title"><span class="num">7</span>패스스루 값과 범주화 태그로 회사 복지제도 조건을 판단한다</div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>판단 기준</th><th>사용 데이터</th><th>판단 결과</th></tr></thead>
+          <tbody>
+            <tr><td>가족 의료비 가능 여부</td><td>수진자관계=배우자, 지원조건=가족의료비 가능</td><td class="pass">충족</td></tr>
+            <tr><td>기관 인정 여부</td><td>기관검증상태=정상등록기관, 기관기준=정상등록기관</td><td class="pass">충족</td></tr>
+            <tr><td>금액 조건</td><td>신청금액=48,500, 기존신청금액=10,000</td><td class="pass">한도 내</td></tr>
+            <tr><td>중복 기준</td><td>동일 신청자 + 동일 진단군 + 동일 진료일 기준</td><td class="pass">중복 이력 없음(지급 가능)</td></tr>
+            <tr><td>지원대상</td><td>지원대상=급여 외래</td><td class="pass">충족</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note">
+        암호화는 “같은 값인지”를 확인하기 위한 것이고, 범주화는 “업무 조건을 충족하는지”를 판단하기 위한 것입니다.
+        두 처리가 함께 있어야 LLM이 원문 민감정보 없이도 업무 판단을 수행할 수 있습니다.
+      </div>
+    </div>
+  </section>
+
+  <section id="step8">
+    <div class="section-title"><span class="num">8</span>최종 지급 여부 판단</div>
+    <div class="final">
+      <h3>결과: 중복 이력 없음(지급 가능)</h3>
+      <p>
+        신청자 동일성이 확인되었고, 병원 유효성도 충족되었습니다.
+        수진자관계가 배우자로 확인되어 가족 의료비 정책 적용 대상이며,
+        신청금액은 한도 내입니다. 기존 이력과 비교한 결과 중복 지급 대상이 아니며,
+        회사 의료비 지원조건에도 부합하므로 지급 가능으로 판단합니다.
+      </p>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h3 style="margin-top:0">사용자에게 나가는 응답 예시</h3>
+      <div class="code">의료비 신청 건은 <span class="g">중복 이력 없음(지급 가능)</span>으로 판단됩니다.
+수진자관계가 배우자로 확인되어 가족 의료비 정책이 적용되며,
+의료기관은 정상 등록기관으로 확인되었습니다.
+신청금액은 잔여한도 이내이고,
+사내 조회 데이터의 기존 이력과 비교한 결과 중복 지급 대상이 아닙니다.</div>
+      <div class="note warn">
+        이 응답에도 원문 병명, 주민번호, 병원명, 신청자명은 포함되지 않습니다.
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title"><span class="num">+</span>선택 실시예: sLM 2차 검증</div>
+    <div class="card">
+      <p class="note" style="margin-top:0">
+        확장 실시예로 sLM은 Agent LLM이 만든 태깅 계획, 컬럼 메타데이터 또는 ZEZ가 생성한 처리 결과를 2차 검증할 수 있습니다.
+        이때도 sLM은 원문 민감정보를 직접 보지 않고, 누락·충돌·오분류 가능성만 검증합니다.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>1차 처리</th><th>2차 검증</th><th>불확실 시</th></tr></thead>
+          <tbody>
+            <tr><td>Agent LLM이 컬럼별 처리계획 생성</td><td>sLM이 태깅 누락·충돌·오분류 가능성 검증</td><td>사람 검토 이관</td></tr>
+            <tr><td>ZEZ가 실제 암호화·범주화 수행</td><td>sLM이 보호 처리 결과의 정책 부합성 확인</td><td>자동 처리 보류</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <div class="footer">
+    <b>정리:</b> Agent LLM은 원문값이 아닌 컬럼 정보와 레시피 설명서를 보고 처리계획을 만들고,
+    ZEZ는 그 계획에 따라 실제 데이터값을 안전하게 처리합니다.
+    Agent LLM은 이후 암호화 태그는 동일성 비교에만 사용하고, 패스스루 값과 범주화 태그로 회사 복지제도 조건을 판단합니다.
+  </div>
+</main>
+</body>
+</html>
