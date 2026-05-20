@@ -311,6 +311,28 @@ th{
   .card,.dataset,.bucket,.hero,.final{break-inside:avoid;background:#fff;color:#111;border-color:#bbb}
   .code{background:#f7f7f7;color:#111}
 }
+.btn-chart-link {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(167, 139, 250, 0.15));
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.15);
+}
+.btn-chart-link:hover {
+  border-color: var(--blue);
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.35);
+  transform: translateY(-1px);
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.3), rgba(167, 139, 250, 0.25));
+}
 </style>
 </head>
 <body>
@@ -321,6 +343,7 @@ th{
   </div>
   <nav class="nav">
     <a href="index.html" style="border-color: var(--purple); color: var(--purple);">← Master Policy 메인</a>
+    <a href="medical_review_agent_overall_flow_chart_arrows_v3.html" style="border-color: var(--blue); color: var(--blue); font-weight:900;">📊 전체 플로우 차트</a>
     <a href="#step1">1 업로드</a>
     <a href="#step2">2 데이터셋</a>
     <a href="#step3">3 처리계획</a>
@@ -349,7 +372,12 @@ th{
   </section>
 
   <section class="card">
-    <div class="section-title" style="margin-top:0"><span class="num">0</span>전체 흐름 한눈에 보기</div>
+    <div class="section-title" style="margin-top:0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+      <div style="display:flex; align-items:center; gap:10px;"><span class="num">0</span>전체 흐름 한눈에 보기</div>
+      <a href="medical_review_agent_overall_flow_chart_arrows_v3.html" class="btn-chart-link">
+        📊 상세 전체 플로우 차트 보기 →
+      </a>
+    </div>
     <div class="flowline">
       <div class="flow-step"><span class="small-num">1</span><h3>영수증 업로드</h3><p>구성원이 의료비 증빙을 제출</p></div>
       <div class="flow-step"><span class="small-num">2</span><h3>3개 데이터셋 생성</h3><p>OCR, 사내조회, 사내정책</p></div>
