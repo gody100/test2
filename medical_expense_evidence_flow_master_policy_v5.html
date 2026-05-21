@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>의료비 검토 자동화 에이전트</title>
+<style>
+:root{
+  --bg:#06101d;
+  --bg2:#030712;
+  --panel:#0b1a2b;
+  --line:#23415d;
+  --text:#e5f2ff;
+  --muted:#8ea8c2;
+  --user:#22c55e;
+  --agent:#8b5cf6;
+  --recipe:#f59e0b;
+  --zez:#0ea5e9;
+  --sys:#14b8a6;
+  --enc:#a78bfa;
+  --cat:#fbbf24;
+  --pass:#34d399;
+  --block:#ef4444;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{
+  background:
+    radial-gradient(circle at 50% -20%,rgba(14,165,233,.22),transparent 42%),
+    linear-gradient(180deg,#07182a 0%,#030712 100%);
+  color:var(--text);
+  font-family:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  line-height:1.5;
+}
+.top-title{
+  width:100%;
+  padding:22px 30px 18px;
+  border-bottom:1px solid rgba(14,165,233,.25);
+  background:rgba(3,7,18,.78);
+  backdrop-filter:blur(8px);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:16px;
+  flex-wrap:wrap;
+}
+.top-title h1{
+  font-size:34px;
+  line-height:1.25;
+  letter-spacing:-.6px;
+  font-weight:950;
+  color:#fff;
+  text-shadow:0 0 28px rgba(14,165,233,.28);
+}
+.btn-back{
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:8px 18px;
+  border-radius:999px;
+  border:1px solid rgba(14, 165, 233, 0.4);
+  background:rgba(14, 165, 233, 0.08);
+  color:#7dd3fc;
+  font-size:13px;
+  font-weight:800;
+  transition:all .3s ease;
+}
+.btn-back:hover{
+  border-color:var(--zez);
+  box-shadow:0 0 16px rgba(14, 165, 233, 0.35);
+  background:rgba(14, 165, 233, 0.2);
+  color:#fff;
+  transform:translateY(-1px);
+}
+.wrapper{
+  width:100%;
+  padding:22px 28px 38px;
+}
+.flow-chart{
+  width:100%;
+  max-width:1920px;
+  margin:0 auto;
+  border:1px solid rgba(35,65,93,.95);
+  border-radius:22px;
+  background:rgba(5,13,24,.86);
+  overflow:visible;
+  box-shadow:0 26px 90px rgba(0,0,0,.42);
+}
+.lane-head{
+  display:grid;
+  grid-template-columns:.85fr 1.28fr 1.62fr 1.48fr 1.1fr;
+  grid-template-rows:58px 48px;
+  background:#08172a;
+  border-bottom:2px solid var(--line);
+}
+.lane-head > div{
+  padding:12px 16px;
+  border-right:1px solid rgba(35,65,93,.65);
+  font-size:15px;
+  font-weight:950;
+  color:#fff;
+  text-align:center;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+}
+.lane-head small{
+  display:block;
+  margin-top:4px;
+  font-size:11px;
+  font-weight:600;
+  color:var(--muted);
+  text-align:center;
+}
+.lane-group{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+}
+.lane-group.user-head{grid-column:1;grid-row:1 / span 2;color:#86efac}
+.lane-group.agent-head{grid-column:2;grid-row:1 / span 2;color:#c4b5fd}
+.lane-group.sys-head{grid-column:5;grid-row:1 / span 2;color:#99f6e4;border-right:none}
+.lane-group.zez-super{
+  grid-column:3 / span 2;
+  grid-row:1;
+  align-items:center;
+  text-align:center;
+  color:#7dd3fc;
+  background:linear-gradient(135deg,rgba(14,165,233,.19),rgba(245,158,11,.08));
+  border-right:1px solid rgba(35,65,93,.65);
+  border-bottom:1px solid rgba(14,165,233,.35);
+}
+.lane-sub{
+  grid-row:2;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:10px 16px;
+  font-size:14px;
+  text-align:center;
+  border-right:1px solid rgba(35,65,93,.65);
+  background:rgba(14,165,233,.055);
+}
+.lane-sub.recipe-head{grid-column:3;color:#fde68a}
+.lane-sub.zez-head{grid-column:4;color:#7dd3fc}
+.flow-row{
+  display:grid;
+  grid-template-columns:.85fr 1.28fr 1.62fr 1.48fr 1.1fr;
+  min-height:146px;
+  border-bottom:1px solid rgba(35,65,93,.48);
+  overflow:visible;
+}
+.flow-row:last-child{border-bottom:none}
+.cell{
+  padding:13px;
+  position:relative;
+  border-right:1px solid rgba(35,65,93,.33);
+  overflow:visible;
+}
+.cell:last-child{border-right:none}
+.cell.user{background:rgba(34,197,94,.028)}
+.cell.agent{background:rgba(139,92,246,.034)}
+.cell.recipe{
+  background:linear-gradient(90deg,rgba(14,165,233,.050),rgba(245,158,11,.040));
+  border-left:2px solid rgba(14,165,233,.35);
+}
+.cell.zez{
+  background:linear-gradient(90deg,rgba(14,165,233,.052),rgba(14,165,233,.037));
+  border-right:2px solid rgba(14,165,233,.35);
+}
+.cell.sys{background:rgba(20,184,166,.03)}
+.box{
+  height:100%;
+  min-height:118px;
+  border-radius:17px;
+  padding:14px 15px;
+  background:rgba(13,27,45,.92);
+  border:1px solid rgba(255,255,255,.13);
+  position:relative;
+  overflow:visible;
+  z-index:2;
+}
+.box:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.04),transparent 52%);
+  pointer-events:none;
+}
+.box.empty{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  color:#50677d;
+  font-size:12px;
+  border-style:dashed;
+  background:rgba(255,255,255,.018);
+}
+.box h3{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:14.5px;
+  font-weight:950;
+  color:#fff;
+  margin-bottom:9px;
+  position:relative;
+  z-index:1;
+}
+.num{
+  flex:0 0 auto;
+  width:26px;
+  height:26px;
+  border-radius:50%;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:12px;
+  font-weight:950;
+  background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.17);
+}
+.box p,
+.box li{
+  font-size:12.2px;
+  color:#cbd5e1;
+  line-height:1.62;
+  position:relative;
+  z-index:1;
+}
+ul{list-style:none;display:grid;gap:4px}
+li:before{content:"•";color:#93c5fd;margin-right:6px;font-weight:900}
+.box.user{border-color:rgba(34,197,94,.48);background:linear-gradient(135deg,rgba(34,197,94,.12),rgba(13,27,45,.86))}
+.box.agent{border-color:rgba(139,92,246,.54);background:linear-gradient(135deg,rgba(139,92,246,.14),rgba(13,27,45,.86))}
+.box.recipe{border-color:rgba(245,158,11,.55);background:linear-gradient(135deg,rgba(245,158,11,.14),rgba(13,27,45,.86))}
+.box.zez{border-color:rgba(14,165,233,.55);background:linear-gradient(135deg,rgba(14,165,233,.14),rgba(13,27,45,.86))}
+.box.sys{border-color:rgba(20,184,166,.48);background:linear-gradient(135deg,rgba(20,184,166,.13),rgba(13,27,45,.86))}
+.box.mpe{border-color:rgba(249,115,22,.70);box-shadow:0 0 0 1px rgba(249,115,22,.18),0 16px 42px rgba(249,115,22,.10);background:linear-gradient(135deg,rgba(249,115,22,.20),rgba(13,27,45,.88))}
+.mpe-label{
+  display:inline-block;
+  margin-bottom:8px;
+  padding:4px 9px;
+  border-radius:999px;
+  color:#fed7aa;
+  background:rgba(249,115,22,.14);
+  border:1px solid rgba(249,115,22,.45);
+  font-size:10.5px;
+  font-weight:950;
+  position:relative;
+  z-index:1;
+}
+.tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px;position:relative;z-index:1}
+.tag{font-size:10px;font-weight:950;border-radius:8px;padding:4px 7px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.05);white-space:nowrap}
+.tag.enc{color:#ddd6fe;border-color:rgba(167,139,250,.48);background:rgba(167,139,250,.13)}
+.tag.cat{color:#fde68a;border-color:rgba(251,191,36,.48);background:rgba(251,191,36,.13)}
+.tag.pass{color:#bbf7d0;border-color:rgba(52,211,153,.48);background:rgba(52,211,153,.13)}
+.tag.block{color:#fecaca;border-color:rgba(239,68,68,.48);background:rgba(239,68,68,.13)}
+.tag.mpe{color:#fed7aa;border-color:rgba(249,115,22,.48);background:rgba(249,115,22,.13)}
+.arrow-right,.arrow-left{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:80;
+  width:auto;
+  height:auto;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:18px;
+  line-height:1;
+  font-weight:950;
+  border:none;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+  text-shadow:0 0 10px rgba(56,189,248,.65),0 0 3px rgba(3,7,18,.95);
+  pointer-events:none;
+}
+.arrow-right{
+  right:-18px;
+  color:#67e8f9;
+}
+.arrow-left{
+  left:-18px;
+  color:#c4b5fd;
+  text-shadow:0 0 10px rgba(167,139,250,.65),0 0 3px rgba(3,7,18,.95);
+}
+.arrow-right::after,.arrow-left::after{
+  content:none;
+}
+.step-band{
+  grid-column:1/-1;
+  min-height:auto;
+  padding:10px 18px;
+  background:rgba(255,255,255,.025);
+  border-bottom:1px solid rgba(35,65,93,.48);
+  color:#a9bfd5;
+  font-size:13px;
+  font-weight:850;
+  letter-spacing:.1px;
+}
+.step-band b{color:#fff}
+.final-result{
+  grid-column:1/-1;
+  padding:18px 22px;
+  background:linear-gradient(135deg,rgba(16,185,129,.14),rgba(14,165,233,.10));
+  border-top:1px solid rgba(16,185,129,.34);
+}
+.final-result .result-box{
+  border:1px solid rgba(16,185,129,.45);
+  border-radius:18px;
+  padding:18px 20px;
+  background:rgba(6,20,20,.70);
+  display:flex;
+  justify-content:space-between;
+  gap:20px;
+  align-items:flex-start;
+}
+.result-box h3{font-size:20px;color:#ecfdf5;margin-bottom:6px}
+.result-box p{font-size:13px;color:#cbd5e1;line-height:1.75}
+.result-badge{
+  flex:0 0 auto;
+  color:#bbf7d0;
+  background:rgba(16,185,129,.15);
+  border:1px solid rgba(16,185,129,.48);
+  border-radius:999px;
+  padding:9px 14px;
+  font-size:13px;
+  font-weight:950;
+  white-space:nowrap;
+}
+@media(max-width:1200px){
+  .top-title h1{font-size:27px}
+  .lane-head,.flow-row{grid-template-columns:1fr}
+  .lane-head{display:none}
+  .cell{border-right:none;border-bottom:1px solid rgba(35,65,93,.30)}
+  .cell:before{content:attr(data-lane);display:block;font-size:12px;color:var(--muted);font-weight:950;margin-bottom:8px}
+  .arrow-right,.arrow-left{display:none}
+  .flow-row{min-height:auto}
+  .box{min-height:auto}
+  .final-result .result-box{flex-direction:column}
+}
+@media(max-width:700px){
+  .wrapper{padding:14px 12px 28px}
+  .top-title{padding:18px 16px 14px}
+  .top-title h1{font-size:24px}
+}
+
+.skill-chain-mini{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;align-items:center}
+.skill-pill{display:inline-flex;align-items:center;gap:4px;padding:5px 8px;border-radius:999px;border:1px solid rgba(249,115,22,.42);background:rgba(249,115,22,.11);color:#fed7aa;font-size:10px;font-weight:950;white-space:nowrap}
+.skill-arrow{color:#94a3b8;font-size:12px;font-weight:900}
+.dataset-list{display:grid;gap:5px;margin-top:8px}
+.dataset-item{border:1px solid rgba(148,163,184,.22);background:rgba(15,23,42,.44);border-radius:8px;padding:6px 8px;font-size:10px;line-height:1.45;color:#cbd5e1}
+.dataset-item b{color:#e2e8f0}
+.box.skill-focus{border-color:rgba(249,115,22,.72);background:linear-gradient(135deg,rgba(249,115,22,.16),rgba(13,27,45,.88));box-shadow:0 0 0 1px rgba(249,115,22,.12)}
+.box.skill-focus h3 .num{background:#f97316;color:#0b1220}
+.flow-row.skill-row{min-height:176px}
+.row-caption{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:#fed7aa;font-weight:950;margin-bottom:8px;text-transform:uppercase;letter-spacing:.03em}
+@media(max-width:1200px){.skill-chain-mini{align-items:flex-start}.skill-arrow{display:none}}
+
+</style>
+</head>
+<body>
+  <header class="top-title">
+    <h1>의료비 검토 자동화 에이전트 전체 플로우</h1>
+    <a href="medical_expense_evidence_flow_master_policy_v4.html" class="btn-back">
+      ← 의료비 증빙 예시로 돌아가기
+    </a>
+  </header>
+
+  <main class="wrapper">
+    <section class="flow-chart" aria-label="의료비 검토 자동화 에이전트 전체 플로우 차트">
+      <div class="lane-head">
+        <div class="lane-group user-head">사용자<small>요청 · 결과 확인</small></div>
+        <div class="lane-group agent-head">Agent LLM<small>레시피 선택 · 스킬 플래닝 · 판단</small></div>
+        <div class="lane-group zez-super">ZEZ 내부 안전구역<small>의료비 레시피·내부 스킬과 실제 실행·데이터 처리를 함께 보유</small></div>
+        <div class="lane-sub recipe-head">의료비 레시피 / 내부 스킬<small>ZEZ 내부 업무 플레이북</small></div>
+        <div class="lane-sub zez-head">스킬 실행 / 데이터 처리<small>원문 보관 · 스킬 실행 · 암호화 처리</small></div>
+        <div class="lane-group sys-head">사내 시스템 · 정책<small>OCR · HR · 복지온 · 정책 DB</small></div>
+      </div>
+
+      <div class="step-band"><b>STEP 1</b> 사용자 접속 및 의료비 신청 시작</div>
+      <div class="flow-row">
+        <div class="cell user" data-lane="사용자">
+          <div class="box user">
+            <h3><span class="num">1</span> 의료비 증빙 업로드</h3>
+            <p>구성원이 의료비 영수증과 진단서 이미지를 업로드한다.</p>
+            <div class="tags"><span class="tag pass">영수증</span><span class="tag pass">진단서</span></div>
+            <span class="arrow-right">→</span>
+          </div>
+        </div>
+        <div class="cell agent" data-lane="Agent LLM">
+          <div class="box agent">
+            <h3><span class="num">2</span> 업무 인식 · 레시피 호출</h3>
+            <p>요청을 <b>의료비 신청</b> 업무로 분류하고 ZEZ 내부 의료비 레시피를 호출한다.</p>
+            <div class="tags"><span class="tag mpe">레시피 선택</span><span class="tag block">원문 직접 접근 없음</span></div>
+            <span class="arrow-right">→</span>
+          </div>
+        </div>
+        <div class="cell recipe" data-lane="ZEZ 내부: 의료비 레시피 / 내부 스킬">
+          <div class="box recipe">
+            <h3><span class="num">3</span> 의료비 레시피 로드</h3>
+            <p>레시피 안에 실행할 내부 스킬 체인과 태그 처리 원칙이 포함된다.</p>
+            <div class="skill-chain-mini">
+              <span class="skill-pill">OCR</span><span class="skill-arrow">→</span>
+              <span class="skill-pill">사내 조회</span><span class="skill-arrow">→</span>
+              <span class="skill-pill">정책 조회</span><span class="skill-arrow">→</span>
+              <span class="skill-pill">Master Policy</span><span class="skill-arrow">→</span>
+              <span class="skill-pill">데이터 처리</span><span class="skill-arrow">→</span>
+              <span class="skill-pill">판단·최종 액션</span>
+            </div>
+            <span class="arrow-right">→</span>
+          </div>
+        </div>
+        <div class="cell zez" data-lane="ZEZ">
+          <div class="box zez">
+            <h3><span class="num">4</span> 세션 생성 · 원문 격리</h3>
+            <p>ZEZ가 원본 파일, 원문 데이터, 암호화 키, 매핑테이블을 내부 안전구역에 격리한다.</p>
+            <div class="tags"><span class="tag block">Agent 원문 접근 불가</span><span class="tag block">키·매핑 격리</span></div>
+          </div>
+        </div>
+        <div class="cell sys" data-lane="사내 시스템 · 정책">
+          <div class="box empty">시스템 조회 전</div>
+        </div>
+      </div>
+
+      <div class="step-band"><b>SKILL 1</b> OCR 스킬 — 증빙 이미지에서 OCR 추출 데이터셋 생성</div>
+      <div class="flow-row skill-row">
+        <div class="cell user" data-lane="사용자"><div class="box empty">처리 대기</div></div>
+        <div class="cell agent" data-lane="Agent LLM">
+          <div class="box agent">
+            <div class="row-caption">Agent Planning</div>
+            <h3><span class="num">5</span> OCR 스킬 호출</h3>
+            <p>Agent가 의료비 레시피의 첫 번째 단계로 OCR 스킬 실행을 ZEZ에 요청한다.</p>
+            <div class="tags"><span class="tag mpe">스킬 호출</span><span class="tag block">파일 원문 직접 열람 없음</span></div>
+            <span class="arrow-right">→</span>
+          </div>
+        </div>
+        <div class="cell recipe" data-lane="ZEZ 내부: 의료비 레시피 / 내부 스킬">
+          <div class="box skill-focus">
+            <h3><span class="num">6</span> OCR 스킬</h3>
+            <p>의료비 영수증·진단서를 구조화 필드 후보로 추출하는 레시피 내부 스킬이다.</p>
+            <div class="dataset-list">
+              <div class="dataset-item"><b>입력</b> 영수증 이미지, 진단서 이미지</div>
+              <div class="dataset-item"><b>출력</b> 주민번호, 신청자명, 진단명, 진단군, 병원명, 신청금액, 진료일</div>
+            </div>
+            <span class="arrow-right">→</span>
+          </div>
+        </div>
+        <div class="cell zez" data-lane="ZEZ">
+          <div class="box zez">
+            <h3><span class="num">7</span> OCR 실제 실행</h3>
+            <p>ZEZ가 OCR 모듈을 호출해 <b>데이터셋1: OCR 추출 데이터</b>를 만든다.</p>
+            <div class="tags"><span class="tag enc">진단명 원문은 ZEZ 내부</span><span class="tag pass">신청금액 추출</span><span class="tag pass">진료일 추출</span></div>
+            <span class="arrow-right">→</span>
+          </div>
+        </div>
+        <div class="cell sys" data-lane="사내 시스템 · 정책">
+          <div class="box sys">
+            <h3><span class="num">8</span> OCR 모듈</h3>
+            <p>영수증·진단서 이미지에서 텍스트와 필드 후보를 반환한다.</p>
+            <div class="tags"><span class="tag pass">OCR</span><span class="tag pass">필드 후보</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-band"><b>SKILL 2</b> 사내 조회 스킬 — 구성원 인증, 병원 유효성, 중복 이력 데이터셋 생성</div>
+      <div class="flow-row skill-row">
+        <div class="cell user" data-lane="사용자"><div class="box empty">처리 대기</div></div>
+        <div class="cell agent" data-lane="Agent LLM">
+          <div class="box agent">
+            <h3><span class="num">9</span> 사내 조회 스킬 호출</h3>
+            <p>Agent가 구성원 인증, 수진자관계, 병원 검증, 기존 신청이력 조회를 ZEZ에 요청한다.</p>
+            <div class="tags"><span class="tag mpe">구성원 인증</span><span class="tag mpe">병원 검증</span><span class="tag mpe">중복 이력</span></div>
+            <span class="arrow-right">→</span>
+          </div>
+        </div>
+        <div class="cell recipe" data-lane="ZEZ 내부: 의료비 레시피 / 내부 스킬">
+          <div class="box skill-focus">
+            <h3><span class="num">10</span> 사내 조회 스킬</h3>
+            <p>의료비 레시피가 요구하는 사내 시스템 조회 항목을 묶어 실행하는 내부 스킬이다.</p>
+            <div class="dataset-list">
+              <div class="dataset-item"><b>조회</b> HR 구성원 인증, 복지온 수진자관계, 건보 병원검증, 기존 신청이력</div>
+              <div class="dataset-item"><b>출력</b> 구성원 인증 결과, 수진자관계, 기관검증상태, 기존 진단군·병원·진료일·금액</div>
+            </div>
+            <span class="arrow-right">→</span>
+          </div>
+        </div>
+        <div class="cell zez" data-lane="ZEZ">
+          <div class="box zez">
+            <h3><span class="num">11</span> 사내 데이터 조회 실행</h3>
+            <p>ZEZ가 사내 시스템을 조회해 <b>데이터셋2: 사내 조회 데이터</b>를 만든다.</p>
+            <div class="tags"><span class="tag cat">수진자관계 후보</span><span class="tag cat">기관검증상태 후보</span><span class="tag enc">기존 진단군 비교 후보</span></div>
+            <span class="arrow-right">→</span>
+          </div>
+        </div>
+        <div class="cell sys" data-lane="사내 시스템 · 정책">
+          <div class="box sys">
+            <h3><span class="num">12</span> HR · 복지온 · 건보 · 이력 DB</h3>
+            <p>구성원 인증, 가족관계, 병원 유효성, 기존 신청이력을 반환한다.</p>
+            <div class="tags"><span class="tag pass">HR</span><span class="tag pass">복지온</span><span class="tag pass">건보</span><span class="tag pass">이력 DB</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-band"><b>SKILL 3</b> 정책 조회 스킬 — 의료비 제도 조건과 중복기준 데이터셋 생성</div>
+      <div class="flow-row skill-row">
+        <div class="cell user" data-lane="사용자"><div class="box empty">처리 대기</div></div>
+        <div class="cell agent" data-lane="Agent LLM">
+          <div class="box agent">
+            <h3><span class="num">13</span> 정책 조회 스킬 호출</h3>
+            <p>Agent가 의료비 복지제도, 지원조건, 기관기준, 중복기준 조회를 요청한다.</p>
+            <div class="tags"><span class="tag mpe">지원조건</span><span class="tag mpe">기관기준</span><span class="tag mpe">중복기준</span></div>
+            <span class="arrow-right">→</span>
+          </div>
+        </div>
+        <div class="cell recipe" data-lane="ZEZ 내부: 의료비 레시피 / 내부 스킬">
+          <div class="box skill-focus">
+            <h3><span class="num">14</span> 정책 조회 스킬</h3>
+            <p>의료비 제도 정책과 레시피 판단에 필요한 제도 조건을 가져온다.</p>
+            <div class="dataset-list">
+              <div class="dataset-item"><b>조회</b> 지원조건, 지원대상, 정책진단군, 기관기준, 중복기준, 정책버전</div>
+              <div class="dataset-item"><b>출력</b> 데이터셋3: 사내 정책 데이터</div>
+            </div>
+            <span class="arrow-right">→</span>
+          </div>
+        </div>
+        <div class="cell zez" data-lane="ZEZ">
+          <div class="box zez">
+            <h3><span class="num">15</span> 정책 데이터 조회 실행</h3>
+            <p>ZEZ가 사내 정책 DB 또는 RAG 인덱스에서 <b>데이터셋3: 사내 정책 데이터</b>를 만든다.</p>
+            <div class="tags"><span class="tag cat">지원조건 후보</span><span class="tag cat">기관기준 후보</span><span class="tag enc">정책진단군 비교 후보</span></div>
+            <span class="arrow-right">→</span>
+          </div>
+        </div>
+        <div class="cell sys" data-lane="사내 시스템 · 정책">
+          <div class="box sys">
+            <h3><span class="num">16</span> 의료비 제도 정책 DB</h3>
+            <p>가족 의료비 가능, 급여 외래, 정상등록기관, 동일신청자+동일진단군+동일진료일 기준을 반환한다.</p>
+            <div class="tags"><span class="tag pass">정책 DB</span><span class="tag pass">RAG 인덱스</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-band"><b>SKILL 4</b> Master Policy Engine 스킬 — 컬럼 기반 암호화·범주화·패스스루 처리계획 생성</div>
+      <div class="flow-row skill-row">
+        <div class="cell user" data-lane="사용자"><div class="box empty">처리 대기</div></div>
+        <div class="cell agent" data-lane="Agent LLM">
+          <div class="box agent">
+            <h3><span class="num">17</span> 컬럼 기반 처리계획 생성</h3>
+            <p>Agent는 원문값이 아니라 컬럼명, 타입, 출처, 비교 필요성, 계산 필요성, 레시피 태그 계약만 본다.</p>
+            <div class="tags"><span class="tag block">원문값 없음</span><span class="tag mpe">컬럼 메타데이터</span><span class="tag mpe">태그 계약</span></div>
+            <span class="arrow-right">→</span>
+          </div>
+        </div>
+        <div class="cell recipe" data-lane="ZEZ 내부: 의료비 레시피 / 내부 스킬">
+          <div class="box mpe">
+            <span class="mpe-label">의료비 레시피 내부 스킬</span>
+            <h3><span class="num">18</span> Master Policy Engine 스킬</h3>
+            <p>각 컬럼을 암호화 태그, 범주화 태그, 패스스루, 차단 중 하나로 배정한다.</p>
+            <div class="tags"><span class="tag enc">민감+동일비교 → 암호화</span><span class="tag pass">계산필요 → 패스스루</span><span class="tag cat">상태값 → 범주화</span><span class="tag block">고위험 → 차단</span></div>
+            <span class="arrow-right">→</span>
+          </div>
+        </div>
+        <div class="cell zez" data-lane="ZEZ">
+          <div class="box zez">
+            <h3><span class="num">19</span> 3개 데이터셋 메타 제공</h3>
+            <p>ZEZ가 3개 데이터셋의 컬럼 정보와 출처 정보를 제공하고, 원문값은 내부에 둔다.</p>
+            <div class="dataset-list">
+              <div class="dataset-item"><b>데이터셋1</b> OCR 추출 데이터</div>
+              <div class="dataset-item"><b>데이터셋2</b> 사내 조회 데이터</div>
+              <div class="dataset-item"><b>데이터셋3</b> 사내 정책 데이터</div>
+            </div>
+            <span class="arrow-left">←</span>
+          </div>
+        </div>
+        <div class="cell sys" data-lane="사내 시스템 · 정책">
+          <div class="box empty">원문 데이터는<br/>ZEZ 내부 격리</div>
+        </div>
+      </div>
+
+      <div class="step-band"><b>SKILL 5</b> 데이터 처리 스킬 — ZEZ가 실제 원문 데이터에 암호화·범주화·패스스루 수행</div>
+      <div class="flow-row skill-row">
+        <div class="cell user" data-lane="사용자"><div class="box empty">처리 대기</div></div>
+        <div class="cell agent" data-lane="Agent LLM">
+          <div class="box agent">
+            <h3><span class="num">20</span> 처리계획 전달</h3>
+            <p>Agent가 Master Policy Engine 스킬 결과인 컬럼별 처리계획을 ZEZ에 전달한다.</p>
+            <div class="tags"><span class="tag mpe">처리계획</span><span class="tag block">원문 처리 없음</span></div>
+            <span class="arrow-right">→</span>
+          </div>
+        </div>
+        <div class="cell recipe" data-lane="ZEZ 내부: 의료비 레시피 / 내부 스킬">
+          <div class="box skill-focus">
+            <h3><span class="num">21</span> 데이터 처리 스킬</h3>
+            <p>처리계획에 따라 실제 컬럼별 변환을 수행하도록 ZEZ 실행 계층을 호출한다.</p>
+            <ul>
+              <li>주민번호·신청자명·진단명·진단군·병원명 → 암호화</li>
+              <li>신청금액·진료일 → 패스스루</li>
+              <li>수진자관계·기관검증상태·지원조건 → 범주화</li>
+            </ul>
+            <span class="arrow-right">→</span>
+          </div>
+        </div>
+        <div class="cell zez" data-lane="ZEZ">
+          <div class="box zez">
+            <h3><span class="num">22</span> 실제 데이터 처리</h3>
+            <p>ZEZ가 원문 데이터값에 암호화·범주화·패스스루·차단을 실제 수행한다.</p>
+            <div class="tags"><span class="tag enc">ENC_PERSON</span><span class="tag enc">ENC_DX</span><span class="tag enc">ENC_DXCAT</span><span class="tag enc">ENC_INST</span><span class="tag pass">48,500</span><span class="tag pass">2026-04-10</span><span class="tag cat">배우자</span><span class="tag cat">정상등록기관</span></div>
+            <span class="arrow-left">←</span>
+          </div>
+        </div>
+        <div class="cell sys" data-lane="사내 시스템 · 정책">
+          <div class="box empty">원문·키·매핑테이블은<br/>ZEZ 내부 격리</div>
+        </div>
+      </div>
+
+      <div class="step-band"><b>SKILL 6</b> 판단·최종 액션 스킬 — 보호 처리 데이터로 검증 후 업무 시스템 반영</div>
+      <div class="flow-row skill-row">
+        <div class="cell user" data-lane="사용자"><div class="box empty">결과 대기</div></div>
+        <div class="cell agent" data-lane="Agent LLM">
+          <div class="box agent">
+            <h3><span class="num">23</span> 3개 데이터셋 비교 검증</h3>
+            <ul>
+              <li>암호화 태그: 동일 신청자·동일 진단군·동일 병원 비교</li>
+              <li>패스스루: 신청금액·진료일·기존 금액 판단</li>
+              <li>범주화: 수진자관계·기관검증상태·지원조건 판단</li>
+            </ul>
+            <div class="tags"><span class="tag block">복호화 없음</span><span class="tag pass">중복 이력 없음</span></div>
+            <span class="arrow-right">→</span>
+          </div>
+        </div>
+        <div class="cell recipe" data-lane="ZEZ 내부: 의료비 레시피 / 내부 스킬">
+          <div class="box skill-focus">
+            <h3><span class="num">24</span> 판단·최종 액션 스킬</h3>
+            <p>판단 기준으로 지급 여부를 확정하고, 지급 가능 시 최종 액션 스킬을 호출한다.</p>
+            <div class="tags"><span class="tag mpe">판단 기준</span><span class="tag mpe">상태 반영</span><span class="tag mpe">알림</span><span class="tag mpe">감사로그</span></div>
+            <span class="arrow-right">→</span>
+          </div>
+        </div>
+        <div class="cell zez" data-lane="ZEZ">
+          <div class="box zez">
+            <h3><span class="num">25</span> 업무 시스템 실행</h3>
+            <p>ZEZ가 복지온 반영, 증빙 이력 저장, 사용자 알림, 감사 로그 기록을 수행한다.</p>
+            <div class="tags"><span class="tag pass">복지온 반영</span><span class="tag pass">감사 로그</span></div>
+            <span class="arrow-right">→</span>
+          </div>
+        </div>
+        <div class="cell sys" data-lane="사내 시스템 · 정책">
+          <div class="box sys">
+            <h3><span class="num">26</span> 복지온 · 알림 · 감사로그</h3>
+            <p>지급 상태가 반영되고, 처리 이력과 근거가 감사 로그에 저장된다.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-band"><b>STEP 7</b> 사용자에게 결과 안내 및 세션 종료</div>
+      <div class="flow-row">
+        <div class="cell user" data-lane="사용자">
+          <div class="box user">
+            <h3><span class="num">27</span> 결과 확인</h3>
+            <p>사용자는 의료비 검토 결과와 처리 상태를 확인한다.</p>
+            <div class="tags"><span class="tag pass">중복 이력 없음(지급 가능)</span></div>
+          </div>
+        </div>
+        <div class="cell agent" data-lane="Agent LLM">
+          <div class="box agent">
+            <h3><span class="num">28</span> 자연어 응답 생성</h3>
+            <p>민감 원문을 포함하지 않고, 지급 가능 여부와 판단 근거만 설명한다.</p>
+            <span class="arrow-left">←</span>
+          </div>
+        </div>
+        <div class="cell recipe" data-lane="ZEZ 내부: 의료비 레시피 / 내부 스킬"><div class="box empty">레시피 종료</div></div>
+        <div class="cell zez" data-lane="ZEZ">
+          <div class="box zez">
+            <h3><span class="num">29</span> 세션 종료</h3>
+            <p>처리 완료 후 세션 키, 임시 암호문, 임시 원문 데이터를 정책에 따라 삭제 또는 격리 보관한다.</p>
+            <div class="tags"><span class="tag block">Zero Retention</span><span class="tag block">격리 보관</span></div>
+          </div>
+        </div>
+        <div class="cell sys" data-lane="사내 시스템 · 정책"><div class="box empty">완료</div></div>
+      </div>
+
+      <div class="final-result">
+        <div class="result-box">
+          <div>
+            <h3>핵심 흐름</h3>
+            <p>의료비 레시피와 내부 스킬은 ZEZ 내부 자산으로 관리된다. Agent LLM은 의료비 레시피를 보고 OCR 스킬, 사내 조회 스킬, 정책 조회 스킬, Master Policy Engine 스킬, 데이터 처리 스킬, 판단·최종 액션 스킬을 순서대로 플래닝·호출한다. Agent는 원문값이 아닌 컬럼 정보와 태그 계약을 보고 처리계획을 만들고, ZEZ는 실제 원문 데이터에 암호화·범주화·패스스루·차단을 수행한다. Agent는 보호 처리된 데이터만으로 3개 데이터셋을 비교 검증하여 최종 지급 여부를 판단한다.</p>
+          </div>
+          <div class="result-badge">결과: 중복 이력 없음(지급 가능)</div>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
