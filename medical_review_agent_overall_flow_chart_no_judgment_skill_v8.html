@@ -377,7 +377,7 @@ li:before{content:"•";color:#93c5fd;margin-right:6px;font-weight:900}
     <section class="flow-chart" aria-label="의료비 검토 자동화 에이전트 전체 플로우 차트">
       <div class="lane-head">
         <div class="lane-group user-head">사용자<small>요청 · 결과 확인</small></div>
-        <div class="lane-group agent-head">Agent LLM<small>레시피 선택 · 스킬 플래닝 · 판단</small></div>
+        <div class="lane-group agent-head">Agent LLM<small>레시피 선택 · 스킬 플래닝 · 최종 판단</small></div>
         <div class="lane-group zez-super">ZEZ 내부 안전구역<small>의료비 레시피·내부 스킬과 실제 실행·데이터 처리를 함께 보유</small></div>
         <div class="lane-sub recipe-head">의료비 레시피 / 내부 스킬<small>ZEZ 내부 업무 플레이북</small></div>
         <div class="lane-sub zez-head">스킬 실행 / 데이터 처리<small>원문 보관 · 스킬 실행 · 암호화 처리</small></div>
@@ -412,7 +412,7 @@ li:before{content:"•";color:#93c5fd;margin-right:6px;font-weight:900}
               <span class="skill-pill">정책 조회</span><span class="skill-arrow">→</span>
               <span class="skill-pill">Master Policy</span><span class="skill-arrow">→</span>
               <span class="skill-pill">데이터 처리</span><span class="skill-arrow">→</span>
-              <span class="skill-pill">판단·최종 액션</span>
+              <span class="skill-pill">최종 액션</span>
             </div>
             <span class="arrow-right">→</span>
           </div>
@@ -620,32 +620,54 @@ li:before{content:"•";color:#93c5fd;margin-right:6px;font-weight:900}
         </div>
       </div>
 
-      <div class="step-band"><b>SKILL 6</b> 판단·최종 액션 스킬 — 보호 처리 데이터로 검증 후 업무 시스템 반영</div>
+      <div class="step-band"><b>STEP 6</b> Agent LLM 최종 판단 — 3개 데이터셋 비교 검증 후 지급 여부 확정</div>
       <div class="flow-row skill-row">
-        <div class="cell user" data-lane="사용자"><div class="box empty">결과 대기</div></div>
+        <div class="cell user" data-lane="사용자"><div class="box empty">판단 대기</div></div>
         <div class="cell agent" data-lane="Agent LLM">
           <div class="box agent">
-            <h3><span class="num">23</span> 3개 데이터셋 비교 검증</h3>
+            <h3><span class="num">23</span> 데이터셋 비교 검증 · 최종 지급 여부 판단</h3>
             <ul>
               <li>암호화 태그: 동일 신청자·동일 진단군·동일 병원 비교</li>
               <li>패스스루: 신청금액·진료일·기존 금액 판단</li>
               <li>범주화: 수진자관계·기관검증상태·지원조건 판단</li>
             </ul>
-            <div class="tags"><span class="tag block">복호화 없음</span><span class="tag pass">중복 이력 없음</span></div>
+            <div class="tags"><span class="tag block">복호화 없음</span><span class="tag pass">중복 이력 없음</span><span class="tag mpe">Agent 최종 판단</span></div>
+            <span class="arrow-right">→</span>
+          </div>
+        </div>
+        <div class="cell recipe" data-lane="ZEZ 내부: 의료비 레시피 / 내부 스킬">
+          <div class="box empty">판단 스킬 없음<br/>판단은 Agent LLM의 고유 역할</div>
+        </div>
+        <div class="cell zez" data-lane="ZEZ">
+          <div class="box empty">최종 액션 실행 대기<br/>Agent 판단 결과 수신 전</div>
+        </div>
+        <div class="cell sys" data-lane="사내 시스템 · 정책">
+          <div class="box empty">시스템 반영 전</div>
+        </div>
+      </div>
+
+      <div class="step-band"><b>SKILL 6</b> 최종 액션 스킬 — Agent 판단 결과를 업무 시스템에 반영</div>
+      <div class="flow-row skill-row">
+        <div class="cell user" data-lane="사용자"><div class="box empty">결과 대기</div></div>
+        <div class="cell agent" data-lane="Agent LLM">
+          <div class="box agent">
+            <h3><span class="num">24</span> 최종 액션 스킬 호출</h3>
+            <p>Agent가 지급 가능으로 판단한 뒤, 복지온 반영·알림·감사로그 실행을 ZEZ에 요청한다.</p>
+            <div class="tags"><span class="tag mpe">지급 가능 판단 완료</span><span class="tag block">원문 전달 없음</span></div>
             <span class="arrow-right">→</span>
           </div>
         </div>
         <div class="cell recipe" data-lane="ZEZ 내부: 의료비 레시피 / 내부 스킬">
           <div class="box skill-focus">
-            <h3><span class="num">24</span> 판단·최종 액션 스킬</h3>
-            <p>판단 기준으로 지급 여부를 확정하고, 지급 가능 시 최종 액션 스킬을 호출한다.</p>
-            <div class="tags"><span class="tag mpe">판단 기준</span><span class="tag mpe">상태 반영</span><span class="tag mpe">알림</span><span class="tag mpe">감사로그</span></div>
+            <h3><span class="num">25</span> 최종 액션 스킬</h3>
+            <p>판단 스킬이 아니라, Agent 판단 결과를 실제 업무 시스템 액션으로 반영하는 실행 스킬이다.</p>
+            <div class="tags"><span class="tag mpe">상태 반영</span><span class="tag mpe">알림</span><span class="tag mpe">감사로그</span></div>
             <span class="arrow-right">→</span>
           </div>
         </div>
         <div class="cell zez" data-lane="ZEZ">
           <div class="box zez">
-            <h3><span class="num">25</span> 업무 시스템 실행</h3>
+            <h3><span class="num">26</span> 업무 시스템 실행</h3>
             <p>ZEZ가 복지온 반영, 증빙 이력 저장, 사용자 알림, 감사 로그 기록을 수행한다.</p>
             <div class="tags"><span class="tag pass">복지온 반영</span><span class="tag pass">감사 로그</span></div>
             <span class="arrow-right">→</span>
@@ -653,7 +675,7 @@ li:before{content:"•";color:#93c5fd;margin-right:6px;font-weight:900}
         </div>
         <div class="cell sys" data-lane="사내 시스템 · 정책">
           <div class="box sys">
-            <h3><span class="num">26</span> 복지온 · 알림 · 감사로그</h3>
+            <h3><span class="num">27</span> 복지온 · 알림 · 감사로그</h3>
             <p>지급 상태가 반영되고, 처리 이력과 근거가 감사 로그에 저장된다.</p>
           </div>
         </div>
@@ -663,14 +685,14 @@ li:before{content:"•";color:#93c5fd;margin-right:6px;font-weight:900}
       <div class="flow-row">
         <div class="cell user" data-lane="사용자">
           <div class="box user">
-            <h3><span class="num">27</span> 결과 확인</h3>
+            <h3><span class="num">28</span> 결과 확인</h3>
             <p>사용자는 의료비 검토 결과와 처리 상태를 확인한다.</p>
             <div class="tags"><span class="tag pass">중복 이력 없음(지급 가능)</span></div>
           </div>
         </div>
         <div class="cell agent" data-lane="Agent LLM">
           <div class="box agent">
-            <h3><span class="num">28</span> 자연어 응답 생성</h3>
+            <h3><span class="num">29</span> 자연어 응답 생성</h3>
             <p>민감 원문을 포함하지 않고, 지급 가능 여부와 판단 근거만 설명한다.</p>
             <span class="arrow-left">←</span>
           </div>
@@ -678,7 +700,7 @@ li:before{content:"•";color:#93c5fd;margin-right:6px;font-weight:900}
         <div class="cell recipe" data-lane="ZEZ 내부: 의료비 레시피 / 내부 스킬"><div class="box empty">레시피 종료</div></div>
         <div class="cell zez" data-lane="ZEZ">
           <div class="box zez">
-            <h3><span class="num">29</span> 세션 종료</h3>
+            <h3><span class="num">30</span> 세션 종료</h3>
             <p>처리 완료 후 세션 키, 임시 암호문, 임시 원문 데이터를 정책에 따라 삭제 또는 격리 보관한다.</p>
             <div class="tags"><span class="tag block">Zero Retention</span><span class="tag block">격리 보관</span></div>
           </div>
@@ -690,7 +712,7 @@ li:before{content:"•";color:#93c5fd;margin-right:6px;font-weight:900}
         <div class="result-box">
           <div>
             <h3>핵심 흐름</h3>
-            <p>의료비 레시피와 내부 스킬은 ZEZ 내부 자산으로 관리된다. Agent LLM은 의료비 레시피를 보고 OCR 스킬, 사내 조회 스킬, 정책 조회 스킬, Master Policy Engine 스킬, 데이터 처리 스킬, 판단·최종 액션 스킬을 순서대로 플래닝·호출한다. Agent는 원문값이 아닌 컬럼 정보와 태그 계약을 보고 처리계획을 만들고, ZEZ는 실제 원문 데이터에 암호화·범주화·패스스루·차단을 수행한다. Agent는 보호 처리된 데이터만으로 3개 데이터셋을 비교 검증하여 최종 지급 여부를 판단한다.</p>
+            <p>의료비 레시피와 내부 스킬은 ZEZ 내부 자산으로 관리된다. Agent LLM은 의료비 레시피를 보고 OCR 스킬, 사내 조회 스킬, 정책 조회 스킬, Master Policy Engine 스킬, 데이터 처리 스킬을 순서대로 플래닝·호출한다. 이후 Agent LLM이 보호 처리된 3개 데이터셋을 비교 검증하여 최종 지급 여부를 판단한다. 판단은 스킬이 아니라 Agent LLM의 고유 역할이며, 지급 가능으로 판단된 경우에만 Agent가 최종 액션 스킬을 호출해 ZEZ가 복지온 반영·알림·감사로그를 실행한다.</p>
           </div>
           <div class="result-badge">결과: 중복 이력 없음(지급 가능)</div>
         </div>
